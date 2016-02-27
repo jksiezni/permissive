@@ -60,18 +60,31 @@ public class Permissive {
     permissiveHandler.dispatchRequestPermissionsResult(new RequestPermissionsResult(permissions, grantResults));
   }
 
-  public static int checkPermission(Context context, String permission) {
+  static int checkPermission(Context context, String permission) {
     if (permission == null) {
       throw new IllegalArgumentException("permission is null");
     }
     return context.checkPermission(permission, Process.myPid(), Process.myUid());
   }
 
+  public static boolean hasPermission(Context context, String permission) {
+    return checkPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
+  }
+
+  public static boolean hasPermissions(Context context, String... permissions) {
+    for (String permission : permissions) {
+      if (checkPermission(context, permission) == PackageManager.PERMISSION_DENIED) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public static String[] filterPermissions(Context context, String[] permissions, int filter) {
     final ArrayList<String> filtered = new ArrayList<>();
-    for (int i = 0; i < permissions.length; ++i) {
-      if (checkPermission(context, permissions[i]) == filter) {
-        filtered.add(permissions[i]);
+    for (String permission : permissions) {
+      if (checkPermission(context, permission) == filter) {
+        filtered.add(permission);
       }
     }
     return filtered.toArray(new String[filtered.size()]);
@@ -80,10 +93,10 @@ public class Permissive {
   public static String[] getPermissionsRequiringRationale(Activity activity, String[] permissions) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       final List<String> rationalePermissions = new ArrayList<>();
-      for (int i = 0; i < permissions.length; ++i) {
-        if (checkPermission(activity, permissions[i]) == PackageManager.PERMISSION_DENIED
-            && activity.shouldShowRequestPermissionRationale(permissions[i])) {
-          rationalePermissions.add(permissions[i]);
+      for (String permission : permissions) {
+        if (checkPermission(activity, permission) == PackageManager.PERMISSION_DENIED
+            && activity.shouldShowRequestPermissionRationale(permission)) {
+          rationalePermissions.add(permission);
         }
       }
       return rationalePermissions.toArray(new String[rationalePermissions.size()]);
