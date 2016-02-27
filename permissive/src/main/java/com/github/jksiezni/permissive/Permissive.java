@@ -60,30 +60,21 @@ public class Permissive {
     permissiveHandler.dispatchRequestPermissionsResult(new RequestPermissionsResult(permissions, grantResults));
   }
 
-  static int checkPermission(Context context, String permission) {
+  static int getPermissionGrant(Context context, String permission) {
     if (permission == null) {
       throw new IllegalArgumentException("permission is null");
     }
     return context.checkPermission(permission, Process.myPid(), Process.myUid());
   }
 
-  public static boolean hasPermission(Context context, String permission) {
-    return checkPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
-  }
-
-  public static boolean hasPermissions(Context context, String... permissions) {
-    for (String permission : permissions) {
-      if (checkPermission(context, permission) == PackageManager.PERMISSION_DENIED) {
-        return false;
-      }
-    }
-    return true;
+  public static boolean checkPermission(Context context, String permission) {
+    return getPermissionGrant(context, permission) == PackageManager.PERMISSION_GRANTED;
   }
 
   public static String[] filterPermissions(Context context, String[] permissions, int filter) {
     final ArrayList<String> filtered = new ArrayList<>();
     for (String permission : permissions) {
-      if (checkPermission(context, permission) == filter) {
+      if (getPermissionGrant(context, permission) == filter) {
         filtered.add(permission);
       }
     }
@@ -94,7 +85,7 @@ public class Permissive {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       final List<String> rationalePermissions = new ArrayList<>();
       for (String permission : permissions) {
-        if (checkPermission(activity, permission) == PackageManager.PERMISSION_DENIED
+        if (getPermissionGrant(activity, permission) == PackageManager.PERMISSION_DENIED
             && activity.shouldShowRequestPermissionRationale(permission)) {
           rationalePermissions.add(permission);
         }

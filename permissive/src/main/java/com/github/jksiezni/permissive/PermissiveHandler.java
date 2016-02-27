@@ -169,7 +169,7 @@ class PermissiveHandler implements Handler.Callback {
 
     final int permissionCount = permissions.length;
     for (int i = 0; i < permissionCount; i++) {
-      grantResults[i] = Permissive.checkPermission(context, permissions[i]);
+      grantResults[i] = Permissive.getPermissionGrant(context, permissions[i]);
     }
     return grantResults;
   }

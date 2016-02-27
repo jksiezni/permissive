@@ -84,18 +84,19 @@ public class MainActivity extends AppCompatActivity {
         .execute(this);
   }
 
-  private void onPermissionsGranted(String[] permissions) {
+  private void onPermissionsGranted(String[] permissions) throws SecurityException {
     Toast.makeText(MainActivity.this,
         Html.fromHtml("Permission <font color=green>GRANTED</font> for " + Arrays.toString(permissions)),
         Toast.LENGTH_SHORT)
         .show();
   }
 
-  private void onPermissionsRefused(String[] permissions) {
+  private void onPermissionsRefused(String[] permissions) throws SecurityException {
     Toast.makeText(MainActivity.this,
         Html.fromHtml("Permission <font color=red>REFUSED</font> for " + Arrays.toString(permissions)),
         Toast.LENGTH_SHORT)
         .show();
   }
+
 }
 
