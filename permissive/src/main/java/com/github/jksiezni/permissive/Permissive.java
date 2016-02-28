@@ -103,7 +103,7 @@ public final class Permissive {
     private final String[] permissions;
     private PermissionsGrantedListener permissionsGrantedListener;
     private PermissionsRefusedListener permissionsRefusedListener;
-
+    private PermissionsResultListener permissionsResultListener;
 
     private WeakReference<T> activityRef;
 
@@ -118,6 +118,11 @@ public final class Permissive {
 
     public Action<T> whenPermissionsRefused(PermissionsRefusedListener listener) {
       this.permissionsRefusedListener = listener;
+      return this;
+    }
+
+    public Action<T> whenGotPermissionsResult(PermissionsResultListener listener) {
+      this.permissionsResultListener = listener;
       return this;
     }
 
@@ -146,6 +151,12 @@ public final class Permissive {
     protected void firePermissionsRefusedListener(String[] refusedPermissions) {
       if (permissionsRefusedListener != null) {
         permissionsRefusedListener.onPermissionsRefused(refusedPermissions);
+      }
+    }
+
+    protected void firePermissionsResultListener(String[] grantedPermissions, String[] refusedPermissions) {
+      if (permissionsResultListener != null) {
+        permissionsResultListener.onPermissionsResult(grantedPermissions, refusedPermissions);
       }
     }
 

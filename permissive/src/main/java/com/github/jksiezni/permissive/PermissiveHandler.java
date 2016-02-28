@@ -161,6 +161,7 @@ class PermissiveHandler implements Handler.Callback {
       if (result.refusedPermissions.length > 0) {
         action.firePermissionsRefusedListener(result.refusedPermissions);
       }
+      action.firePermissionsResultListener(result.grantedPermissions, result.refusedPermissions);
     }
   }
 
