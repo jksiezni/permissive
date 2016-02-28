@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         .show();
   }
 
-  private void onPermissionsRefused(String[] permissions) throws SecurityException {
+  private void onPermissionsRefused(String[] permissions) {
     Toast.makeText(MainActivity.this,
         Html.fromHtml("Permission <font color=red>REFUSED</font> for " + Arrays.toString(permissions)),
         Toast.LENGTH_SHORT)

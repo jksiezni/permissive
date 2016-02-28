@@ -31,11 +31,13 @@ import java.util.Map;
 /**
  *
  */
-public class Permissive {
+public final class Permissive {
   public static final String PERMISSIVE_FRAGMENT_TAG = "permissive_fragment";
 
   private static final PermissiveHandler permissiveHandler = new PermissiveHandler();
   private static final Map<String, Rationale> globalRationaleMap = new HashMap<>();
+
+  private Permissive() { /* never instantiated */ }
 
   public static void registerGlobalRationale(String permission, Rationale rationale) {
     synchronized (globalRationaleMap) {

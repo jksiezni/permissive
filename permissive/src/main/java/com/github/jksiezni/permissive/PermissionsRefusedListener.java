@@ -21,5 +21,5 @@ package com.github.jksiezni.permissive;
  */
 public interface PermissionsRefusedListener {
 
-  void onPermissionsRefused(String[] permissions) throws SecurityException;
+  void onPermissionsRefused(String[] permissions);
 }
