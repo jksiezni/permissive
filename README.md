@@ -23,14 +23,14 @@ The _Permissive_ library perfectly fits into [Material Design - Permissions](htt
 ## Getting started
 
 ### Setup
-1. Add it in your `build.gradle` at the end of repositories:
+- Add it in your `build.gradle` at the end of repositories:
 ```gradle
 	repositories {
 		...
 		maven { url "https://jitpack.io" }
 	}
 ```
-2. Add the dependency:
+- Add the dependency:
 ```gradle
 	dependencies {
 		compile 'com.github.jksiezni:permissive:+'
@@ -64,9 +64,9 @@ Then, you can add callback listeners, that return results of the request. You ca
 ```
 
 #### Providing rationale
-There are two ways to provide a rationale for a requested permission.
+There are two ways to provide a rationale for a requested permission:
 
-1. Register a global ```Rationale```, which is executed every time, the permission request is denied:
+- Register a global ```Rationale```, which is executed every time, the permission request is denied:
 **Note**: *Use ```PermissiveMessenger``` repeatPermissionsRequest() or cancelPermissionsRequest() methods to ask again for permissions or cancel ongoing request.
 **Note 2**: If you forget to call one of ```PermissiveMessenger``` methods, then no more ```Requests``` or ```Actions``` will be processed.*
 ```java
@@ -93,7 +93,7 @@ There are two ways to provide a rationale for a requested permission.
     });
 ```
 
-2. Add ```Rationale``` to the ```Permissive.Request```:
+- Add ```Rationale``` to the ```Permissive.Request```:
 ```java
     new Permissive.Request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
       .withRationale(new Rationale() {
