@@ -62,6 +62,10 @@ public final class Permissive {
     permissiveHandler.dispatchRequestPermissionsResult(new RequestPermissionsResult(permissions, grantResults));
   }
 
+  static boolean restoreActivityToCurrentRequest(Activity activity) {
+    return permissiveHandler.restoreActivityToCurrentRequest(activity);
+  }
+
   static int getPermissionGrant(Context context, String permission) {
     if (permission == null) {
       throw new IllegalArgumentException("permission is null");
@@ -101,28 +105,28 @@ public final class Permissive {
   public static class Action<T extends Context> {
 
     private final String[] permissions;
-    private PermissionsGrantedListener permissionsGrantedListener;
-    private PermissionsRefusedListener permissionsRefusedListener;
-    private PermissionsResultListener permissionsResultListener;
+    private WeakReference<PermissionsGrantedListener> permissionsGrantedRef;
+    private WeakReference<PermissionsRefusedListener> permissionsRefusedRef;
+    private WeakReference<PermissionsResultListener> permissionsResultRef;
 
-    private WeakReference<T> activityRef;
+    protected WeakReference<T> activityRef;
 
     public Action(String... permissions) {
       this.permissions = permissions;
     }
 
     public Action<T> whenPermissionsGranted(PermissionsGrantedListener listener) {
-      this.permissionsGrantedListener = listener;
+      this.permissionsGrantedRef = new WeakReference<>(listener);
       return this;
     }
 
     public Action<T> whenPermissionsRefused(PermissionsRefusedListener listener) {
-      this.permissionsRefusedListener = listener;
+      this.permissionsRefusedRef = new WeakReference<>(listener);
       return this;
     }
 
     public Action<T> whenGotPermissionsResult(PermissionsResultListener listener) {
-      this.permissionsResultListener = listener;
+      this.permissionsResultRef = new WeakReference<>(listener);
       return this;
     }
 
@@ -143,20 +147,23 @@ public final class Permissive {
     }
 
     protected void firePermissionsGrantedListener(String[] grantedPermissions) {
-      if (permissionsGrantedListener != null) {
-        permissionsGrantedListener.onPermissionsGranted(grantedPermissions);
+      final PermissionsGrantedListener listener = permissionsGrantedRef != null ? permissionsGrantedRef.get() : null;
+      if (listener != null) {
+        listener.onPermissionsGranted(grantedPermissions);
       }
     }
 
     protected void firePermissionsRefusedListener(String[] refusedPermissions) {
-      if (permissionsRefusedListener != null) {
-        permissionsRefusedListener.onPermissionsRefused(refusedPermissions);
+      final PermissionsRefusedListener listener = permissionsRefusedRef != null ? permissionsRefusedRef.get() : null;
+      if (listener != null) {
+        listener.onPermissionsRefused(refusedPermissions);
       }
     }
 
     protected void firePermissionsResultListener(String[] grantedPermissions, String[] refusedPermissions) {
-      if (permissionsResultListener != null) {
-        permissionsResultListener.onPermissionsResult(grantedPermissions, refusedPermissions);
+      final PermissionsResultListener listener = permissionsResultRef != null ? permissionsResultRef.get() : null;
+      if (listener != null) {
+        listener.onPermissionsResult(grantedPermissions, refusedPermissions);
       }
     }
 
@@ -171,7 +178,7 @@ public final class Permissive {
 
   public static class Request extends Action<Activity> {
 
-    private Rationale rationale;
+    private WeakReference<Rationale> rationaleRef;
 
     private boolean shouldDisplayRationale;
     private boolean showRationaleFirst;
@@ -181,7 +188,7 @@ public final class Permissive {
     }
 
     public Request withRationale(Rationale rationale) {
-      this.rationale = rationale;
+      this.rationaleRef = new WeakReference<>(rationale);
       return this;
     }
 
@@ -199,14 +206,19 @@ public final class Permissive {
     }
 
     @Override
-    public void execute(Activity context) {
+    public void execute(Activity activity) {
       shouldDisplayRationale = true;
-      super.execute(context);
+      super.execute(activity);
+    }
+
+    void updateActivityRef(Activity activity) {
+      activityRef = new WeakReference<>(activity);
     }
 
     protected boolean showRationale(String[] permissions, PermissiveMessenger messenger) {
       shouldDisplayRationale = false;
-      if (rationale != null) {
+      Rationale rationale;
+      if (rationaleRef != null && (rationale = rationaleRef.get()) != null) {
         rationale.onShowRationaleForRequest(getContext(), permissions, messenger);
         return true;
       }

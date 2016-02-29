@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -35,17 +36,16 @@ public class MainActivity extends AppCompatActivity {
       new AlertDialog.Builder(activity)
           .setTitle("Storage Rationale")
           .setMessage("Storage is required to access files on your device.")
-          .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-            messenger.repeatPermissionsRequest();
-          })
-          .setOnDismissListener(dialog1 -> messenger.cancelPermissionsRequest())
+          .setPositiveButton(android.R.string.ok, null)
           .show();
+      messenger.cancelPermissionsRequest();
     });
   }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    Log.i(getClass().getSimpleName(), "onCreate(): " + savedInstanceState);
     setContentView(R.layout.activity_main);
   }
 
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
   }
 
   public void askForStoragePermission(View view) {
-    new Permissive.Action<>(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         .whenPermissionsGranted(this::onPermissionsGranted)
         .whenPermissionsRefused(this::onPermissionsRefused)
         .execute(this);

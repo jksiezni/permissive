@@ -22,7 +22,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -34,9 +33,10 @@ class PermissiveHandler implements Handler.Callback {
 
   private static final int REQUEST_PERMISSIONS = 1;
   private static final int REQUEST_PERMISSIONS_RESULT = 2;
+  private static final int RESTORE_ACTIVITY = 3;
 
-  static final int REPEAT_REQUEST = 3;
-  static final int CANCEL_REQUEST = 4;
+  static final int REPEAT_REQUEST = 4;
+  static final int CANCEL_REQUEST = 5;
 
   private final Queue<Permissive.Action> pendingActions = new ConcurrentLinkedQueue<>();
   private final Handler handler = new Handler(Looper.getMainLooper(), this);
@@ -52,6 +52,15 @@ class PermissiveHandler implements Handler.Callback {
     handler.obtainMessage(REQUEST_PERMISSIONS_RESULT, result).sendToTarget();
   }
 
+  boolean restoreActivityToCurrentRequest(Activity activity) {
+    if (pendingActions.isEmpty()) {
+      return false;
+    } else {
+      handler.obtainMessage(RESTORE_ACTIVITY, activity).sendToTarget();
+      return true;
+    }
+  }
+
   @Override
   public boolean handleMessage(Message msg) {
     switch (msg.what) {
@@ -62,18 +71,22 @@ class PermissiveHandler implements Handler.Callback {
         }
         break;
       case REQUEST_PERMISSIONS_RESULT:
-        if(!processPermissionsResult((RequestPermissionsResult) msg.obj)) {
+        if (!processPermissionsResult((RequestPermissionsResult) msg.obj)) {
           isRequestingPermission = processPendingActions();
         }
         break;
       case REPEAT_REQUEST:
-        Log.w("tag", "REPEAT_REQUEST");
         isRequestingPermission = processPendingActions();
         break;
       case CANCEL_REQUEST:
-        Log.w("tag", "CANCEL_REQUEST");
         pendingActions.remove();
         isRequestingPermission = processPendingActions();
+        break;
+      case RESTORE_ACTIVITY:
+        if (currentAction() instanceof Permissive.Request) {
+          Permissive.Request request = (Permissive.Request) currentAction();
+          request.updateActivityRef((Activity) msg.obj);
+        }
         break;
     }
     return true;
@@ -103,9 +116,7 @@ class PermissiveHandler implements Handler.Callback {
       return false;
     }
     final String[] permissionsToAsk = request.getRefusedPermissions(activity);
-    if (permissionsToAsk.length > 0
-        && Permissive.getPermissionsRequiringRationale(activity, permissionsToAsk).length > 0) {
-
+    if (permissionsToAsk.length > 0) {
       if (request.shouldDisplayRationaleFirst() && showRationaleForRequest(request)) {
         return true;
       }

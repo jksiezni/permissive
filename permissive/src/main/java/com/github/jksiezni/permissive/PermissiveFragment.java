@@ -57,13 +57,15 @@ public class PermissiveFragment extends Fragment {
 
     if (savedInstanceState != null) {
       waitingForResult = savedInstanceState.getBoolean(WAITING_FOR_RESULT);
+      if (!Permissive.restoreActivityToCurrentRequest(getActivity())) {
+        closeFragment();
+        return;
+      }
     }
 
     if (permissions != null && !waitingForResult) {
       waitingForResult = true;
       requestPermissions(permissions, 42);
-    } else {
-      closeFragment();
     }
   }
 
