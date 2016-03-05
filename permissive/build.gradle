@@ -10,11 +10,12 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 
 group = 'com.github.jksiezni'
-version = "1.0-SNAPSHOT"
+version = "0.1-SNAPSHOT"
 
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
+    defaultPublishConfig "release"
 
     defaultConfig {
         minSdkVersion 8

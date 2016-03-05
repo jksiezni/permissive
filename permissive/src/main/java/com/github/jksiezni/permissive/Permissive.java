@@ -24,6 +24,7 @@ import android.os.Process;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,7 @@ import java.util.Map;
  *
  */
 public final class Permissive {
-  public static final String PERMISSIVE_FRAGMENT_TAG = "permissive_fragment";
+  public static final String PERMISSIVE_FRAGMENT_TAG = "com.github.jksiezni.permissive.request_fragment";
 
   private static final PermissiveHandler permissiveHandler = new PermissiveHandler();
   private static final Map<String, Rationale> globalRationaleMap = new HashMap<>();
@@ -45,25 +46,16 @@ public final class Permissive {
     }
   }
 
-
   private static boolean fireGlobalRationale(Activity activity, String[] permissions, PermissiveMessenger messenger) {
     synchronized (globalRationaleMap) {
       for (String permission : permissions) {
         if (globalRationaleMap.containsKey(permission)) {
-          globalRationaleMap.get(permission).onShowRationaleForRequest(activity, new String[]{permission}, messenger);
+          globalRationaleMap.get(permission).onShowRationale(activity, new String[]{permission}, messenger);
           return true;
         }
       }
     }
     return false;
-  }
-
-  static void dispatchRequestPermissionsResult(String[] permissions, int[] grantResults) {
-    permissiveHandler.dispatchRequestPermissionsResult(new RequestPermissionsResult(permissions, grantResults));
-  }
-
-  static boolean restoreActivityToCurrentRequest(Activity activity) {
-    return permissiveHandler.restoreActivityToCurrentRequest(activity);
   }
 
   static int getPermissionGrant(Context context, String permission) {
@@ -138,6 +130,18 @@ public final class Permissive {
       return activityRef.get();
     }
 
+    public PermissionsGrantedListener getPermissionsGrantedListener() {
+      return permissionsGrantedRef != null ? permissionsGrantedRef.get() : null;
+    }
+
+    public PermissionsRefusedListener getPermissionsRefusedListener() {
+      return permissionsRefusedRef != null ? permissionsRefusedRef.get() : null;
+    }
+
+    public PermissionsResultListener getPermissionsResultListener() {
+      return permissionsResultRef != null ? permissionsResultRef.get() : null;
+    }
+
     public void execute(T context) {
       if (context == null) {
         throw new IllegalArgumentException("context is null");
@@ -147,21 +151,21 @@ public final class Permissive {
     }
 
     protected void firePermissionsGrantedListener(String[] grantedPermissions) {
-      final PermissionsGrantedListener listener = permissionsGrantedRef != null ? permissionsGrantedRef.get() : null;
+      final PermissionsGrantedListener listener = getPermissionsGrantedListener();
       if (listener != null) {
         listener.onPermissionsGranted(grantedPermissions);
       }
     }
 
     protected void firePermissionsRefusedListener(String[] refusedPermissions) {
-      final PermissionsRefusedListener listener = permissionsRefusedRef != null ? permissionsRefusedRef.get() : null;
+      final PermissionsRefusedListener listener = getPermissionsRefusedListener();
       if (listener != null) {
         listener.onPermissionsRefused(refusedPermissions);
       }
     }
 
     protected void firePermissionsResultListener(String[] grantedPermissions, String[] refusedPermissions) {
-      final PermissionsResultListener listener = permissionsResultRef != null ? permissionsResultRef.get() : null;
+      final PermissionsResultListener listener = getPermissionsResultListener();
       if (listener != null) {
         listener.onPermissionsResult(grantedPermissions, refusedPermissions);
       }
@@ -174,17 +178,31 @@ public final class Permissive {
       return filterPermissions(context, permissions, PackageManager.PERMISSION_DENIED);
     }
 
+    @Override
+    public String toString() {
+      return getClass().getSimpleName() + '@' + Integer.toHexString(hashCode()) +
+          '{' +
+          Arrays.toString(permissions) +
+          ", pResultListener=" + getPermissionsResultListener() +
+          '}';
+    }
   }
 
   public static class Request extends Action<Activity> {
 
     private WeakReference<Rationale> rationaleRef;
 
-    private boolean shouldDisplayRationale;
-    private boolean showRationaleFirst;
+    final boolean rebuild;
+    private boolean shouldDisplayRationale = true;
+    private boolean showRationaleFirst = false;
 
     public Request(String... permissions) {
+      this(false, permissions);
+    }
+
+    Request(boolean rebuild, String[] permissions) {
       super(permissions);
+      this.rebuild = rebuild;
     }
 
     public Request withRationale(Rationale rationale) {
@@ -207,7 +225,6 @@ public final class Permissive {
 
     @Override
     public void execute(Activity activity) {
-      shouldDisplayRationale = true;
       super.execute(activity);
     }
 
@@ -219,13 +236,24 @@ public final class Permissive {
       shouldDisplayRationale = false;
       Rationale rationale;
       if (rationaleRef != null && (rationale = rationaleRef.get()) != null) {
-        rationale.onShowRationaleForRequest(getContext(), permissions, messenger);
+        rationale.onShowRationale(getContext(), permissions, messenger);
         return true;
       }
       // show globally registered rationale, if any
       return Permissive.fireGlobalRationale(getContext(), permissions, messenger);
     }
 
+    public Rationale getRationale() {
+      return rationaleRef != null ? rationaleRef.get() : null;
+    }
+
+    @Override
+    public String toString() {
+      String str = super.toString();
+      return str.substring(0, str.length() - 1) +
+          ", rationaleListener=" + getRationale()
+          + '}';
+    }
   }
 
 }

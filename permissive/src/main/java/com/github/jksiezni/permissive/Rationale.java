@@ -23,5 +23,5 @@ import android.app.Activity;
  */
 public interface Rationale {
 
-  void onShowRationaleForRequest(Activity activity, String[] permissions, PermissiveMessenger messenger);
+  void onShowRationale(Activity activity, String[] grantablePermissions, PermissiveMessenger messenger);
 }
