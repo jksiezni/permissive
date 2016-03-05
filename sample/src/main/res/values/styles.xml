@@ -8,4 +8,13 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AskInContextDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">#ff9800</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+    </style>
+
+    <style name="EducateInContextDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">#8bc34a</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+    </style>
 </resources>

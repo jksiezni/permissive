@@ -13,12 +13,13 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 package com.github.jksiezni.permissive.sample;
 
 import android.Manifest;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
@@ -32,14 +33,7 @@ import java.util.Arrays;
 public class MainActivity extends AppCompatActivity {
 
   static {
-    Permissive.registerGlobalRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE, (activity, permissions, messenger) -> {
-      new AlertDialog.Builder(activity)
-          .setTitle("Storage Rationale")
-          .setMessage("Storage is required to access files on your device.")
-          .setPositiveButton(android.R.string.ok, null)
-          .show();
-      messenger.cancelPermissionsRequest();
-    });
+    Permissive.registerGlobalRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE, new AskUpFrontFragment());
   }
 
   @Override
@@ -47,41 +41,39 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     Log.i(getClass().getSimpleName(), "onCreate(): " + savedInstanceState);
     setContentView(R.layout.activity_main);
+
+    if (null == savedInstanceState) {
+      new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+          .withRationale(new EducateUpFrontFragment())
+          .showRationaleFirst(true)
+          .execute(this);
+    } else {
+      new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+          .showRationaleFirst(true)
+          .execute(this);
+    }
   }
 
-  public void askForLocationPermission(View view) {
+  public void askForCameraPermission(View view) {
+    new Permissive.Request(Manifest.permission.CAMERA)
+        .withRationale(new AskInContextFragment())
+        .whenPermissionsGranted(this::onPermissionsGranted)
+        .whenPermissionsRefused(this::onPermissionsRefused)
+        .execute(this);
+  }
+
+  public void educateForLocationPermission(View view) {
     new Permissive.Request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
         .showRationaleFirst(true)
-        .withRationale((activity, permissions, messenger) -> {
-          new AlertDialog.Builder(activity)
-              .setTitle("LOCATION Rationale")
-              .setMessage("Location is required to track your position via GPS.")
-              .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                messenger.repeatPermissionsRequest();
-              })
-              .setOnDismissListener(dialog1 -> messenger.cancelPermissionsRequest())
-              .show();
-
-        })
+        .withRationale(new EducateInContextFragment())
         .whenPermissionsGranted(this::onPermissionsGranted)
         .whenPermissionsRefused(this::onPermissionsRefused)
         .execute(this);
   }
 
-  public void askForStoragePermission(View view) {
-    new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        .whenPermissionsGranted(this::onPermissionsGranted)
-        .whenPermissionsRefused(this::onPermissionsRefused)
-        .execute(this);
-  }
-
-  public void askForAllPermissions(View view) {
-    new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.ACCESS_FINE_LOCATION)
-        .whenPermissionsGranted(this::onPermissionsGranted)
-        .whenPermissionsRefused(this::onPermissionsRefused)
-        .execute(this);
+  public void openSettings(View view) {
+    Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", getPackageName(), null));
+    startActivity(i);
   }
 
   private void onPermissionsGranted(String[] permissions) throws SecurityException {

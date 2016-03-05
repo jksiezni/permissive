@@ -15,20 +15,20 @@
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="askForLocationPermission"
-        android:text="LOCATION"/>
+        android:onClick="askForCameraPermission"
+        android:text="Ask In Context"/>
 
     <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="askForStoragePermission"
-        android:text="STORAGE"/>
+        android:onClick="educateForLocationPermission"
+        android:text="Educate In Context"/>
 
     <Button
         android:id="@+id/button3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="askForAllPermissions"
-        android:text="ALL"/>
+        android:onClick="openSettings"
+        android:text="Settings"/>
 </LinearLayout>
