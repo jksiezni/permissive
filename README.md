@@ -34,10 +34,24 @@ All screenshots were taken from __sample__ app, which provides exemplary impleme
 		maven { url "https://jitpack.io" }
 	}
 ```
-- Add the dependency:
+- Add the core dependency:
 ```gradle
 	dependencies {
-		compile 'com.github.jksiezni:permissive:+'
+		compile 'com.github.jksiezni.permissive:permissive:+'
+	}
+```
+- (Optional) Add an extra library with helper fragments:
+```gradle
+	dependencies {
+		// includes helper fragments based on Android Support v4 implementation (minSdkVersion 8)
+		compile 'com.github.jksiezni.permissive:permissive-fragments:+'
+	}
+```
+or
+```gradle
+	dependencies {
+		// includes helper fragments based on native implementation (minSdkVersion 11)
+		compile 'com.github.jksiezni.permissive:permissive-fragments-v13:+'
 	}
 ```
 
