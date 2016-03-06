@@ -17,6 +17,7 @@
 package com.github.jksiezni.permissive;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -30,9 +31,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * The <b>Permissive</b> class provides core API methods to the whole library.
+ * Usually, you will start from here when working with the library.
  *
+ * Also, it provides two nested classes {@link Action} and {@link Request},
+ * which together allow to build a chain of synchronous requests and actions.
+ *
+ * @see Action
+ * @see Request
  */
 public final class Permissive {
+
+  /**
+   * A tag used to identify the {@link PermissiveFragment}.
+   */
   public static final String PERMISSIVE_FRAGMENT_TAG = "com.github.jksiezni.permissive.request_fragment";
 
   private static final PermissiveHandler permissiveHandler = new PermissiveHandler();
@@ -40,6 +52,20 @@ public final class Permissive {
 
   private Permissive() { /* never instantiated */ }
 
+  /**
+   * Registers a global rationale for a given permission.
+   *
+   * This rationale will be used every time, the {@link Request} with the same
+   * permission is executed.
+   *
+   * <p>The best place to use this method is during app initialization.
+   * For example in {@link Application#onCreate()}</p>
+   *
+   * <p>It can be really useful for commonly used permissions in the app.</p>
+   *
+   * @param permission One of permissions from {@link android.Manifest.permission}
+   * @param rationale A rationale that will be used
+   */
   public static void registerGlobalRationale(String permission, Rationale rationale) {
     synchronized (globalRationaleMap) {
       globalRationaleMap.put(permission, rationale);
@@ -65,10 +91,27 @@ public final class Permissive {
     return context.checkPermission(permission, Process.myPid(), Process.myUid());
   }
 
+  /**
+   * Checks whether you have been granted a particular permission.
+   * This method is similar to {@link Context#checkSelfPermission(String)},
+   * but returns a boolean value instead of integer value.
+   *
+   * @param context Provide a context. Can't be {@code null}.
+   * @param permission A permission that should be checked. Can't be {@code null}.
+   * @return {@code true} when permission is granted, otherwise {@code false}.
+   */
   public static boolean checkPermission(Context context, String permission) {
     return getPermissionGrant(context, permission) == PackageManager.PERMISSION_GRANTED;
   }
 
+  /**
+   * Filters all provided permissions and returns only granted or denied.
+   *
+   * @param context Provide a context. Can't be {@code null}.
+   * @param permissions Permissions that should be checked. Can't be {@code null}.
+   * @param filter One of: {@link PackageManager#PERMISSION_GRANTED} or {@link PackageManager#PERMISSION_DENIED}
+   * @return Permissions that match the given filter flag.
+   */
   public static String[] filterPermissions(Context context, String[] permissions, int filter) {
     final ArrayList<String> filtered = new ArrayList<>();
     for (String permission : permissions) {
@@ -79,7 +122,12 @@ public final class Permissive {
     return filtered.toArray(new String[filtered.size()]);
   }
 
-  public static String[] getPermissionsRequiringRationale(Activity activity, String[] permissions) {
+  /**
+   * @param activity An Activity is required here.
+   * @param permissions An array of permissions to be checked.
+   * @return An array of permissions that may require a rationale to be shown.
+   */
+  static String[] getPermissionsRequiringRationale(Activity activity, String[] permissions) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       final List<String> rationalePermissions = new ArrayList<>();
       for (String permission : permissions) {
@@ -93,7 +141,15 @@ public final class Permissive {
     return new String[0];
   }
 
-
+  /**
+   * The Action class is designed to perform tasks when a given set of permissions are granted.
+   * It does not requests any permissions from user, but only checks existing permissions status.
+   *
+   * <p>Each action is enqueued and executed on a main thread, so keep in mind to not add time
+   * consuming tasks, like accessing storage, networking, etc.</p>
+   *
+   * @param <T> A type of {@link Context} in which an action will be executed.
+   */
   public static class Action<T extends Context> {
 
     private final String[] permissions;
@@ -103,29 +159,63 @@ public final class Permissive {
 
     protected WeakReference<T> activityRef;
 
+    /**
+     * Constructs a new Action.
+     *
+     * @param permissions  A list of permissions, that are required by the action.
+     */
     public Action(String... permissions) {
       this.permissions = permissions;
     }
 
+    /**
+     * Registers a callback for granted permissions.
+     * The callback is called when at least one permission has been granted.
+     *
+     * @param listener  A listener object. Keep it's reference somewhere, otherwise it will be GCed.
+     * @return {@code this} object, for method chaining.
+     */
     public Action<T> whenPermissionsGranted(PermissionsGrantedListener listener) {
       this.permissionsGrantedRef = new WeakReference<>(listener);
       return this;
     }
 
+    /**
+     * Registers a callback for refused permissions.
+     * The callback is called when at least one permission has been refused.
+     *
+     * @param listener  A listener object. Keep it's reference somewhere, otherwise it will be GCed.
+     * @return {@code this} object, for method chaining.
+     */
     public Action<T> whenPermissionsRefused(PermissionsRefusedListener listener) {
       this.permissionsRefusedRef = new WeakReference<>(listener);
       return this;
     }
 
-    public Action<T> whenGotPermissionsResult(PermissionsResultListener listener) {
+    /**
+     * Registers a callback for both granted and refused permissions.
+     * The callback is always called and provides a combined result of checking permissions.
+     *
+     * @param listener  A listener object. Keep it's reference somewhere, otherwise it will be GCed.
+     * @return {@code this} object, for method chaining.
+     */
+    public Action<T> whenPermissionsResultReceived(PermissionsResultListener listener) {
       this.permissionsResultRef = new WeakReference<>(listener);
       return this;
     }
 
+    /**
+     * Gets permissions that were provided during initialization.
+     * @return An array of requested permissions.
+     */
     public String[] getPermissions() {
       return permissions;
     }
 
+    /**
+     * Gets a context that was provided when this Action was executed.
+     * @return The context.
+     */
     public T getContext() {
       return activityRef.get();
     }
@@ -142,6 +232,14 @@ public final class Permissive {
       return permissionsResultRef != null ? permissionsResultRef.get() : null;
     }
 
+    /**
+     * Executes this Action with a given context.
+     *
+     * <p>Keep in mind, that if the context disappears (for example when an Activity is finished),
+     * then the Action will not be executed.</p>
+     *
+     * @param context  The context which is saved as weak reference.
+     */
     public void execute(T context) {
       if (context == null) {
         throw new IllegalArgumentException("context is null");
@@ -171,7 +269,13 @@ public final class Permissive {
       }
     }
 
-    public String[] getRefusedPermissions(T context) {
+    /**
+     * Quickly provides an array of refused permissions from a list of permissions provided during initialization.
+     *
+     * @param context  The context to be used.
+     * @return An array of refused permissions.
+     */
+    public String[] getRefusedPermissions(Context context) {
       if (context == null) {
         throw new IllegalArgumentException("context is null");
       }
@@ -188,48 +292,99 @@ public final class Permissive {
     }
   }
 
+  /**
+   * Allows to build a request where you can ask user for dangerous permissions.
+   * It's designed in a way, to create a user friendly and repetitive requests,
+   * that can be easily used in any context or {@link Activity} to be more specific.
+   *
+   * <p>Each {@code Request} is enqueued and executed on a main thread, so keep in mind to not add time
+   * consuming tasks, like accessing storage, networking, etc.</p>
+   */
   public static class Request extends Action<Activity> {
 
     private WeakReference<Rationale> rationaleRef;
 
-    final boolean rebuild;
     private boolean shouldDisplayRationale = true;
     private boolean showRationaleFirst = false;
+    final boolean rebuild;
 
+    /**
+     * Constructs a new Request.
+     *
+     * @param permissions  A list of permissions, that are required by the request.
+     */
     public Request(String... permissions) {
       this(false, permissions);
     }
 
+    /* Inner constructor used to rebuild the Request. See PermissiveMessenger for details. */
     Request(boolean rebuild, String[] permissions) {
       super(permissions);
       this.rebuild = rebuild;
     }
 
+    /**
+     * Registers a callback for rationale handling.
+     * The callback is called when a rationale should be presented to the user.
+     *
+     * @param rationale  A listener object. Keep it's reference somewhere, otherwise it will be GCed.
+     * @return {@code this} object, for method chaining.
+     */
     public Request withRationale(Rationale rationale) {
       this.rationaleRef = new WeakReference<>(rationale);
       return this;
     }
 
+    /**
+     * Forces the rationale to be shown first, before requesting any permissions.
+     *
+     * @param enable When {@code true}, show the rationale first. Default is {@code false}.
+     * @return {@code this} object, for method chaining.
+     */
     public Request showRationaleFirst(boolean enable) {
       showRationaleFirst = enable;
       return this;
     }
 
+    /**
+     * @return {@code true} if a rationale should be displayed for this request.
+     */
     public boolean shouldDisplayRationale() {
       return shouldDisplayRationale;
     }
 
+    /**
+     * @return {@code true} if a rationale should be displayed first for this request.
+     */
     public boolean shouldDisplayRationaleFirst() {
       return showRationaleFirst && shouldDisplayRationale;
     }
 
+    /**
+     * Executes this Request with a given Activity context.
+     *
+     * <p>Keep in mind, that if the activity disappears, then the Request will not be executed.</p>
+     *
+     * @param activity  The Activity context which is saved as weak reference.
+     */
     @Override
     public void execute(Activity activity) {
       super.execute(activity);
     }
 
-    void updateActivityRef(Activity activity) {
-      activityRef = new WeakReference<>(activity);
+    /**
+     * @return a Rationale listener, registered with {@linkplain #withRationale(Rationale)}.
+     */
+    public Rationale getRationale() {
+      return rationaleRef != null ? rationaleRef.get() : null;
+    }
+
+    @Override
+    public String toString() {
+      String str = super.toString();
+      return str.substring(0, str.length() - 1) +
+          ", rationaleListener=" + getRationale()
+          + '}';
     }
 
     protected boolean showRationale(String[] permissions, PermissiveMessenger messenger) {
@@ -243,16 +398,8 @@ public final class Permissive {
       return Permissive.fireGlobalRationale(getContext(), permissions, messenger);
     }
 
-    public Rationale getRationale() {
-      return rationaleRef != null ? rationaleRef.get() : null;
-    }
-
-    @Override
-    public String toString() {
-      String str = super.toString();
-      return str.substring(0, str.length() - 1) +
-          ", rationaleListener=" + getRationale()
-          + '}';
+    void updateActivityRef(Activity activity) {
+      activityRef = new WeakReference<>(activity);
     }
   }
 

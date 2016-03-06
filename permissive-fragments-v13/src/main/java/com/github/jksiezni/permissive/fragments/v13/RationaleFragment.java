@@ -84,7 +84,7 @@ public class RationaleFragment extends Fragment implements Rationale, Permission
     if (!permissiveMessenger.updatePermissionsResultListener(this)) {
       permissiveMessenger.rebuildRequest()
           .withRationale(this)
-          .whenGotPermissionsResult(this)
+          .whenPermissionsResultReceived(this)
           .execute(getActivity());
     }
   }

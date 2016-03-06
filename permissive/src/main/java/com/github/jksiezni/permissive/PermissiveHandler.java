@@ -31,7 +31,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- *
+ * One of core classes, that implements a state machine for permissions handling.
  */
 class PermissiveHandler {
   private static final String TAG = PermissiveHandler.class.getSimpleName();
@@ -98,7 +98,7 @@ class PermissiveHandler {
             break;
           }
           if (msg.obj instanceof PermissionsResultListener) {
-            currentAction.whenGotPermissionsResult((PermissionsResultListener) msg.obj);
+            currentAction.whenPermissionsResultReceived((PermissionsResultListener) msg.obj);
           }
           break;
       }
