@@ -6,8 +6,12 @@ Permissive is a lightweight, yet powerful Android library, that helps you restor
 
 The _Permissive_ library perfectly fits into [Material Design - Permissions](https://www.google.com/design/spec/patterns/permissions.html) pattern, by providing a simple API to accomplish tasks requiring sensitive permissions.
 
-* ```Permissive.Request``` allows to simply ask user for a permission and then (if allowed) do the task.
-* ```Permissive.Action``` allows to do the task when the permission is already granted. It doesn't ask for a permission. Useful for *Services*, *BroadcastReceivers* and *ContentProviders*.
+<img src="/../gh-pages/images/screenshots/educate_up_front.png?raw=true" width="24%"/>
+<img src="/../gh-pages/images/screenshots/ask_up_front.png?raw=true" width="24%"/>
+<img src="/../gh-pages/images/screenshots/educate_in_context.png?raw=true" width="24%"/>
+<img src="/../gh-pages/images/screenshots/ask_in_context.png?raw=true" width="24%"/>
+
+All screenshots were taken from __sample__ app, which provides exemplary implementation of popular use-cases using the library.
 
 ### Features
 
@@ -40,6 +44,7 @@ The _Permissive_ library perfectly fits into [Material Design - Permissions](htt
 ### Usage
 
 #### Requesting permissions
+```Permissive.Request``` allows to simply ask user for a permission and then (if allowed) do the task.
 To request a permission you just need to create and execute ```Permissive.Request```:
 ```java
 new Permissive.Request(Manifest.permission.ACCESS_FINE_LOCATION).execute(getActivity());
@@ -67,8 +72,9 @@ Then, you can add callback listeners, that return results of the request. You ca
 There are two ways to provide a rationale for a requested permission:
 
 - Register a global ```Rationale```, which is executed every time, the permission request is denied:
-**Note**: *Use ```PermissiveMessenger``` repeatPermissionsRequest() or cancelPermissionsRequest() methods to ask again for permissions or cancel ongoing request.
-**Note 2**: If you forget to call one of ```PermissiveMessenger``` methods, then no more ```Requests``` or ```Actions``` will be processed.*
+
+  **Note**: *Use ```PermissiveMessenger``` repeatPermissionsRequest() or cancelPermissionsRequest() methods to ask again for permissions or cancel ongoing request.
+  **Note 2**: If you forget to call one of ```PermissiveMessenger``` methods, then no more ```Requests``` or ```Actions``` will be processed.*
 ```java
     Permissive.registerGlobalRationale(Manifest.permission.ACCESS_FINE_LOCATION, new Rationale() {
       @Override
@@ -108,8 +114,9 @@ There are two ways to provide a rationale for a requested permission:
 #### Running a ```Permissive.Action```
 
 The ```Permissive.Action``` simply checks what permissions are granted or refused to the app. So, the main difference from ```Permissive.Request``` is that it doesn't show any dialogs to the user.
-However, it is executed in a queue as every other ```Permissive.Request```, what provides a big advantage when used with requests. In effect, every action will wait until other Actions or Requests are completed.
-Also, actions can be used in background tasks (like _Services_), where no Activity exists, but a sensitive permission is still required.
+Also, it is executed in a queue as every other ```Permissive.Request```, what provides a big advantage when used with requests. In effect, every action will wait until other Actions or Requests are completed.
+Actions can be used in background tasks (like _Services_), where no Activity exists, but a sensitive permission is still required.
+
 **Note**: *It's reasonable to not present the request dialog out of blue when running in background, but instead handle denied permission.*
 ```java
     // here using Java 8 lambdas
