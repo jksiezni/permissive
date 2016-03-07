@@ -26,7 +26,21 @@ import android.os.RemoteException;
 import android.util.Log;
 
 /**
+ * The class allows to control a current request while a rationale is displayed.
  *
+ * <p>When a {@link Rationale} is displayed, then the processing of other actions and requests are stopped,
+ * until a current request is canceled or repeated. As a developer you have to carefully design the flow
+ * of your rationale, so you won't omit a required call to {@link #repeatRequest()} or {@link #cancelRequest()}.
+ * Otherwise, a deadlock in your App may occur.
+ * </p>
+ *
+ * <p>Fortunately, the class provides useful methods, that will help you to maintain control over request,
+ * and allow to rebuild your request in case of destroyed process.
+ * </p>
+ *
+ * @see #repeatRequest()
+ * @see #cancelRequest()
+ * @see #rebuildRequest()
  */
 public class PermissiveMessenger implements Parcelable {
   private static final String TAG = PermissiveMessenger.class.getSimpleName();
@@ -48,6 +62,12 @@ public class PermissiveMessenger implements Parcelable {
 
   private boolean messageSent;
 
+  /**
+   * Constructs the messenger for given requested permissions.
+   *
+   * @param target A permissive handler, where all messages are sent.
+   * @param permissions  Requested permissions.
+   */
   PermissiveMessenger(Handler target, String[] permissions) {
     this.messenger = new Messenger(target);
     this.permissions = permissions;
@@ -56,12 +76,33 @@ public class PermissiveMessenger implements Parcelable {
   private PermissiveMessenger(Parcel in) {
     this.messenger = in.readParcelable(getClass().getClassLoader());
     this.permissions = in.createStringArray();
+    this.messageSent = in.readInt() > 0;
   }
 
+  @Override
+  public int describeContents() {
+    return 0;
+  }
+
+  @Override
+  public void writeToParcel(Parcel dest, int flags) {
+    dest.writeParcelable(messenger, flags);
+    dest.writeStringArray(permissions);
+    dest.writeInt(messageSent ? 1 : 0);
+  }
+
+  /**
+   * @return An array with requested permissions.
+   */
   public String[] getRequestedPermissions() {
     return permissions;
   }
 
+  /**
+   * Sends a message to repeat current request.
+   *
+   * @return {@code true} if the message was sent. Otherwise is {@code false}.
+   */
   public synchronized boolean repeatRequest() {
     return repeatRequest(false);
   }
@@ -137,14 +178,4 @@ public class PermissiveMessenger implements Parcelable {
     return new Permissive.Request(true, permissions);
   }
 
-  @Override
-  public int describeContents() {
-    return 0;
-  }
-
-  @Override
-  public void writeToParcel(Parcel dest, int flags) {
-    dest.writeParcelable(messenger, flags);
-    dest.writeStringArray(permissions);
-  }
 }

@@ -29,7 +29,13 @@ import android.util.Log;
 import java.util.Arrays;
 
 /**
+ * This fragment is used to request permissions on Android Marshmallow (>23).
  *
+ * It's designed to retain its state across activities and processes,
+ * so we can be sure, that the request result is received and correctly dispatched.
+ *
+ * Unfortunately, the request itself may not be preserved across processes, then the request
+ * can be rebuilt with {@link PermissiveMessenger#rebuildRequest()}.
  */
 @TargetApi(Build.VERSION_CODES.M)
 public class PermissiveFragment extends Fragment {
