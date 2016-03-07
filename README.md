@@ -11,7 +11,7 @@ The _Permissive_ library perfectly fits into [Material Design - Permissions](htt
 <img src="/../gh-pages/images/screenshots/educate_in_context.png?raw=true" width="24%"/>
 <img src="/../gh-pages/images/screenshots/ask_in_context.png?raw=true" width="24%"/>
 
-All screenshots were taken from __sample__ app, which provides exemplary implementation of popular use-cases using the library.
+All screenshots were taken from __sample__ app, which provides exemplary implementation of popular use-cases using the _Permissive_ library.
 
 ### Features
 
@@ -27,20 +27,20 @@ All screenshots were taken from __sample__ app, which provides exemplary impleme
 ## Getting started
 
 ### Setup
-- Add it in your `build.gradle` at the end of repositories:
+ - Add it in your `build.gradle` at the end of repositories:
 ```gradle
 	repositories {
 		...
 		maven { url "https://jitpack.io" }
 	}
 ```
-- Add the core dependency:
+ - Add the core dependency:
 ```gradle
 	dependencies {
 		compile 'com.github.jksiezni.permissive:permissive:+'
 	}
 ```
-- (Optional) Add an extra library with helper fragments:
+ - (Optional) Add an extra library with helper fragments:
 ```gradle
 	dependencies {
 		// includes helper fragments based on Android Support v4 implementation (minSdkVersion 8)
@@ -64,7 +64,7 @@ To request a permission you just need to create and execute ```Permissive.Reques
 new Permissive.Request(Manifest.permission.ACCESS_FINE_LOCATION).execute(getActivity());
 ```
 
-Then, you can add callback listeners, that return results of the request. You can also ask for more permissions at once:
+You can add callback listeners which return results of the request. Also, you can ask for more permissions with a single _Request_:
 ```java
     new Permissive.Request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
         .whenPermissionsGranted(new PermissionsGrantedListener() {
@@ -83,8 +83,15 @@ Then, you can add callback listeners, that return results of the request. You ca
 ```
 
 #### Providing rationale
-There are two ways to provide a rationale for a requested permission:
+When requesting permissions, a rationale may be required. According to Material Design guidelines,
+you should provide a proper rationale depending on clarity and importance of permission type you are requesting.
+_Permissive_ API is very flexible and allows you to implement all strategies of requesting permissions:
+ - Educate up-front
+ - Ask up-front
+ - Educate in context
+ - Ask in context
 
+// TODO finish description
 - Register a global ```Rationale```, which is executed every time, the permission request is denied:
 
   **Note**: *Use ```PermissiveMessenger``` repeatPermissionsRequest() or cancelPermissionsRequest() methods to ask again for permissions or cancel ongoing request.
