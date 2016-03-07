@@ -53,6 +53,7 @@ public class PermissiveFragment extends Fragment {
   }
 
   private boolean waitingForResult;
+  private boolean hasResult;
 
 
   @Override
@@ -64,31 +65,16 @@ public class PermissiveFragment extends Fragment {
     if (DEBUG) {
       Log.v(TAG, "onCreate(): " + Arrays.toString(permissions));
     }
+  }
 
+  @Override
+  public void onActivityCreated(Bundle savedInstanceState) {
+    super.onActivityCreated(savedInstanceState);
     if (savedInstanceState != null) {
       waitingForResult = savedInstanceState.getBoolean(WAITING_FOR_RESULT);
       if (!restoreActivity() && !waitingForResult) {
         Log.e(TAG, "It should never happen, that we close this fragment before any results are received!");
         closeFragment();
-      }
-    }
-  }
-
-  @Override
-  public void onDestroy() {
-    super.onDestroy();
-    if (DEBUG) {
-      Log.v(TAG, "onDestroy(): isRemoving=" + isRemoving());
-    }
-    if (!isRemoving()) {
-      try {
-        Message msg = Message.obtain();
-        msg.what = PermissiveHandler.CANCEL_REQUEST;
-        messenger.send(msg);
-      } catch (RemoteException e) {
-        if (DEBUG) {
-          Log.w(TAG, e);
-        }
       }
     }
   }
@@ -106,21 +92,39 @@ public class PermissiveFragment extends Fragment {
   }
 
   @Override
+  public void onResume() {
+    super.onResume();
+    if (DEBUG) {
+      Log.v(TAG, "onResume():");
+    }
+    if (hasResult) {
+      closeFragment();
+    }
+  }
+
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    if (DEBUG) {
+      Log.v(TAG, "onDestroy(): isRemoving=" + isRemoving());
+    }
+    if (hasResult) {
+      sendMsg(PermissiveHandler.PERMISSIONS_RESULT);
+    } else if (!isRemoving()) {
+      sendMsg(PermissiveHandler.CANCEL_REQUEST);
+    }
+  }
+
+  @Override
   public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
     if (DEBUG) {
       Log.v("PermissiveFragment", "Results: " + Arrays.toString(permissions) + " = " + Arrays.toString(grantResults));
     }
     waitingForResult = false;
-    closeFragment();
-
-    try {
-      Message msg = Message.obtain();
-      msg.what = PermissiveHandler.PERMISSIONS_RESULT;
-      messenger.send(msg);
-    } catch (RemoteException e) {
-      if (DEBUG) {
-        Log.w(TAG, e);
-      }
+    hasResult = true; // postpone sending this event until this fragment is resumed
+    if (isResumed()) {
+      Log.e(TAG, "It's in resumed state, so we should close it immediately.");
+      //closeFragment();
     }
   }
 
@@ -137,6 +141,20 @@ public class PermissiveFragment extends Fragment {
     getFragmentManager().beginTransaction()
         .remove(this)
         .commit();
+  }
+
+  private boolean sendMsg(int what) {
+    try {
+      Message msg = Message.obtain();
+      msg.what = what;
+      messenger.send(msg);
+      return true;
+    } catch (RemoteException e) {
+      if (DEBUG) {
+        Log.w(TAG, e);
+      }
+      return false;
+    }
   }
 
   private boolean restoreActivity() {

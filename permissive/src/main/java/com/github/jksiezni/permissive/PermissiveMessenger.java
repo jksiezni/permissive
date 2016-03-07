@@ -16,6 +16,7 @@
 
 package com.github.jksiezni.permissive;
 
+import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
@@ -62,12 +63,17 @@ public class PermissiveMessenger implements Parcelable {
   }
 
   public synchronized boolean repeatRequest() {
+    return repeatRequest(false);
+  }
+
+  public synchronized boolean repeatRequest(boolean showRationale) {
     if (messageSent) {
       return false;
     }
     try {
       Message msg = Message.obtain();
       msg.what = PermissiveHandler.REPEAT_REQUEST;
+      msg.arg1 = showRationale ? 1 : 0;
       messenger.send(msg);
       messageSent = true;
       return true;
@@ -102,6 +108,21 @@ public class PermissiveMessenger implements Parcelable {
       Message msg = Message.obtain();
       msg.what = PermissiveHandler.UPDATE_LISTENER;
       msg.obj = listener;
+      messenger.send(msg);
+      return true;
+    } catch (Exception e) {
+      if (DEBUG) {
+        Log.w(TAG, e);
+      }
+      return false;
+    }
+  }
+
+  public boolean restoreActivity(Activity activity) {
+    try {
+      Message msg = Message.obtain();
+      msg.what = PermissiveHandler.RESTORE_ACTIVITY;
+      msg.obj = activity;
       messenger.send(msg);
       return true;
     } catch (Exception e) {

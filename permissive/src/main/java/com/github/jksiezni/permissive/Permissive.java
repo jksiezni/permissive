@@ -287,6 +287,8 @@ public final class Permissive {
       return getClass().getSimpleName() + '@' + Integer.toHexString(hashCode()) +
           '{' +
           Arrays.toString(permissions) +
+          ", pGrantedListener=" + getPermissionsGrantedListener() +
+          ", pRefusedListener=" + getPermissionsRefusedListener() +
           ", pResultListener=" + getPermissionsResultListener() +
           '}';
     }
@@ -358,6 +360,18 @@ public final class Permissive {
      */
     public boolean shouldDisplayRationaleFirst() {
       return showRationaleFirst && shouldDisplayRationale;
+    }
+
+    /**
+     * A package protected method to override status of displayed rationale.
+     * In rare cases it's reasonable to show rationale more than once.
+     *
+     * @see PermissiveMessenger#repeatRequest(boolean)
+     *
+     * @param displayRationale  {@code true} when rationale should be displayed. The value is reset once the rationale is displayed.
+     */
+    void shouldDisplayRationale(boolean displayRationale) {
+      this.shouldDisplayRationale = displayRationale;
     }
 
     /**

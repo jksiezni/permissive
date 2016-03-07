@@ -73,14 +73,18 @@ class PermissiveHandler {
           break;
         case REPEAT_REQUEST:
           Log.v(TAG, "REPEAT_REQUEST");
-          if (!requestPermissions((Permissive.Request) currentAction)) {
-            processAction(currentAction);
-            currentAction = processPendingActions();
+          if (currentAction instanceof Permissive.Request) {
+            final Permissive.Request request = (Permissive.Request) currentAction;
+            request.shouldDisplayRationale(msg.arg1 > 0);
+            if (!requestPermissions(request)) {
+              processAction(currentAction);
+              currentAction = processPendingActions();
+            }
           }
           break;
         case CANCEL_REQUEST:
           Log.v(TAG, "CANCEL_REQUEST");
-          //pendingActions.remove();
+          processAction(currentAction);
           currentAction = processPendingActions();
           break;
         case RESTORE_ACTIVITY:
@@ -149,7 +153,7 @@ class PermissiveHandler {
 
     final String[] permissionsToAsk = request.getRefusedPermissions(activity);
     if (permissionsToAsk.length > 0) {
-      if (request.shouldDisplayRationale() && showRationaleForRequest(request)) {
+      if (request.shouldDisplayRationaleFirst() && showRationaleForRequest(request)) {
         return true;
       }
       askForPermissions(activity, permissionsToAsk);
@@ -169,7 +173,7 @@ class PermissiveHandler {
   private boolean processPermissionsResultFor(Permissive.Action action) {
     if (action instanceof Permissive.Request) {
       Permissive.Request request = (Permissive.Request) action;
-      if (request.shouldDisplayRationale() && showRationaleForRequest(request)) {
+      if (showRationaleForRequest(request)) {
         return true;
       }
     } else {
@@ -185,7 +189,7 @@ class PermissiveHandler {
       return false;
     }
     final String[] rationalePermissions = Permissive.getPermissionsRequiringRationale(activity, request.getPermissions());
-    if (request.shouldDisplayRationaleFirst() || rationalePermissions.length > 0) {
+    if (request.shouldDisplayRationale()) {
       final PermissiveMessenger messenger = new PermissiveMessenger(handler, request.getPermissions());
       return request.showRationale(rationalePermissions, messenger) && !request.rebuild;
     }
