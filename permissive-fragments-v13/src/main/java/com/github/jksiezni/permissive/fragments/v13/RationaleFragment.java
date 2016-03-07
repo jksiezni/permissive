@@ -29,13 +29,17 @@ import com.github.jksiezni.permissive.Rationale;
  */
 public class RationaleFragment extends Fragment implements Rationale, PermissionsResultListener {
 
-  private String[] permissions;
+  private String[] allowablePermissions;
   private PermissiveMessenger permissiveMessenger;
 
   private boolean doFinish;
 
   public String[] getPermissions() {
-    return permissions;
+    return allowablePermissions;
+  }
+
+  public boolean isAnyAllowablePermission() {
+    return allowablePermissions.length > 0;
   }
 
   public PermissiveMessenger getPermissiveMessenger() {
@@ -43,8 +47,8 @@ public class RationaleFragment extends Fragment implements Rationale, Permission
   }
 
   @Override
-  public void onShowRationale(Activity activity, String[] permissions, PermissiveMessenger messenger) {
-    this.permissions = permissions;
+  public void onShowRationale(Activity activity, String[] allowablePermissions, PermissiveMessenger messenger) {
+    this.allowablePermissions = allowablePermissions;
     this.permissiveMessenger = messenger;
 
     if (isAdded()) {
@@ -78,7 +82,7 @@ public class RationaleFragment extends Fragment implements Rationale, Permission
     Log.i(getClass().getSimpleName(), "onCreate(): this=" + this + ", savedInstanceState=" + savedInstanceState);
 
     if (savedInstanceState != null) {
-      permissions = savedInstanceState.getStringArray("permissions");
+      allowablePermissions = savedInstanceState.getStringArray("permissions");
       permissiveMessenger = savedInstanceState.getParcelable("messenger");
     }
     if (!permissiveMessenger.updatePermissionsResultListener(this)) {
@@ -93,14 +97,8 @@ public class RationaleFragment extends Fragment implements Rationale, Permission
   public void onSaveInstanceState(Bundle outState) {
     Log.i(getClass().getSimpleName(), "onSaveInstanceState(): this=" + this);
     super.onSaveInstanceState(outState);
-    outState.putStringArray("permissions", permissions);
+    outState.putStringArray("permissions", allowablePermissions);
     outState.putParcelable("messenger", permissiveMessenger);
-  }
-
-  @Override
-  public void onStop() {
-    super.onStop();
-    Log.i(getClass().getSimpleName(), "onStop(): this=" + this);
   }
 
   @Override
@@ -112,15 +110,4 @@ public class RationaleFragment extends Fragment implements Rationale, Permission
     }
   }
 
-  @Override
-  public void onPause() {
-    super.onPause();
-    Log.i(getClass().getSimpleName(), "onPause(): this=" + this);
-  }
-
-  @Override
-  public void onDestroy() {
-    super.onDestroy();
-    Log.i(getClass().getSimpleName(), "onDestroy(): this=" + this);
-  }
 }

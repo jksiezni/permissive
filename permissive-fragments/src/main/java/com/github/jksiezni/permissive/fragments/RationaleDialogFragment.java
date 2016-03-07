@@ -16,105 +16,79 @@
 package com.github.jksiezni.permissive.fragments;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
-import com.github.jksiezni.permissive.PermissionsResultListener;
 import com.github.jksiezni.permissive.PermissiveMessenger;
 import com.github.jksiezni.permissive.Rationale;
+
 
 /**
  *
  */
-public class RationaleDialogFragment extends DialogFragment implements Rationale, PermissionsResultListener {
+public class RationaleDialogFragment extends DialogFragment implements Rationale {
+  private static final boolean DEBUG = BuildConfig.DEBUG;
 
-  private String[] permissions;
+  private String[] allowablePermissions;
   private PermissiveMessenger permissiveMessenger;
 
-  private boolean doFinish;
-
   public String[] getPermissions() {
-    return permissions;
+    return allowablePermissions;
   }
 
   public PermissiveMessenger getPermissiveMessenger() {
     return permissiveMessenger;
   }
 
+  public boolean isAnyAllowablePermission() {
+    return allowablePermissions.length > 0;
+  }
+
   @Override
-  public void onShowRationale(Activity activity, String[] permissions, PermissiveMessenger messenger) {
-    this.permissions = permissions;
+  public void onShowRationale(Activity activity, String[] allowablePermissions, PermissiveMessenger messenger) {
+    this.allowablePermissions = allowablePermissions;
     this.permissiveMessenger = messenger;
 
     if (activity instanceof FragmentActivity) {
       FragmentActivity fa = (FragmentActivity) activity;
       show(fa.getSupportFragmentManager(), null);
+    } else {
+      throw new ClassCastException("This fragment (" + this +
+          ") requires an instance of FragmentActivity to work, but was: " + activity);
     }
-  }
-
-  @Override
-  public void onPermissionsResult(String[] grantedPermissions, String[] refusedPermissions) throws SecurityException {
-    Log.i(getClass().getSimpleName(), "onPermissionsResult(): this=" + this);
-    finishFragment();
-  }
-
-  public void finishFragment() {
-    if (!isResumed()) {
-      Log.e(getClass().getSimpleName(), "onPermissionsResult(): failed to exit. this=" + this);
-      doFinish = true;
-      return;
-    }
-    getFragmentManager().beginTransaction()
-        .remove(this)
-        .commit();
   }
 
   @Override
   public void onSaveInstanceState(Bundle outState) {
-    Log.i(getClass().getSimpleName(), "onSaveInstanceState(): this=" + this);
+    if (DEBUG) {
+      Log.d(getClass().getSimpleName(), "onSaveInstanceState(): this=" + this);
+    }
     super.onSaveInstanceState(outState);
-    outState.putStringArray("permissions", permissions);
+    outState.putStringArray("permissions", allowablePermissions);
     outState.putParcelable("messenger", permissiveMessenger);
   }
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Log.i(getClass().getSimpleName(), "onCreate(): this=" + this + ", savedInstanceState=" + savedInstanceState);
+    if (DEBUG) {
+      Log.d(getClass().getSimpleName(), "onCreate(): this=" + this + ", savedInstanceState=" + savedInstanceState);
+    }
 
     if (savedInstanceState != null) {
-      permissions = savedInstanceState.getStringArray("permissions");
+      allowablePermissions = savedInstanceState.getStringArray("permissions");
       permissiveMessenger = savedInstanceState.getParcelable("messenger");
     }
-    permissiveMessenger.updatePermissionsResultListener(this);
+    permissiveMessenger.restoreActivity(getActivity());
   }
 
   @Override
-  public void onStop() {
-    super.onStop();
-    Log.i(getClass().getSimpleName(), "onStop(): this=" + this);
+  public void onCancel(DialogInterface dialog) {
+    super.onCancel(dialog);
+    permissiveMessenger.cancelRequest();
   }
 
-  @Override
-  public void onResume() {
-    super.onResume();
-    Log.i(getClass().getSimpleName(), "onResume(): this=" + this);
-    if (doFinish) {
-      finishFragment();
-    }
-  }
-
-  @Override
-  public void onPause() {
-    super.onPause();
-    Log.i(getClass().getSimpleName(), "onPause(): this=" + this);
-  }
-
-  @Override
-  public void onDestroy() {
-    super.onDestroy();
-    Log.i(getClass().getSimpleName(), "onDestroy(): this=" + this);
-  }
 }
