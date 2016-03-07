@@ -20,6 +20,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
+import android.view.Gravity;
 
 import com.github.jksiezni.permissive.fragments.RationaleDialogFragment;
 
@@ -31,12 +32,16 @@ public class EducateInContextFragment extends RationaleDialogFragment implements
   @NonNull
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
-    return new AlertDialog.Builder(getActivity(), R.style.EducateInContextDialogTheme)
+    AlertDialog dialog = new AlertDialog.Builder(getActivity(), R.style.EducateInContextDialogTheme)
+        .setIcon(R.mipmap.ic_launcher)
         .setTitle("Educate in context...")
         .setMessage("Location is required to track your position via GPS.")
         .setPositiveButton(android.R.string.ok, this)
         .setNegativeButton(android.R.string.no, this)
         .create();
+
+    dialog.getWindow().setGravity(Gravity.BOTTOM);
+    return dialog;
   }
 
   @Override
@@ -51,9 +56,4 @@ public class EducateInContextFragment extends RationaleDialogFragment implements
     }
   }
 
-  @Override
-  public void onDismiss(DialogInterface dialog) {
-    super.onDismiss(dialog);
-    getPermissiveMessenger().cancelRequest();
-  }
 }

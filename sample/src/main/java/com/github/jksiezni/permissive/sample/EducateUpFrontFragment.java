@@ -49,7 +49,7 @@ public class EducateUpFrontFragment extends RationaleFragment {
     final boolean firstTimeAsk = sharedPrefs.getBoolean("first_time_ask", true);
 
     Button tryItBtn = (Button) view.findViewById(R.id.tryItBtn);
-    if (!firstTimeAsk && getPermissions().length == 0) {
+    if (!firstTimeAsk && !isAnyAllowablePermission()) {
       tryItBtn.setText("SETTINGS");
       tryItBtn.setOnClickListener(new View.OnClickListener() {
         @Override
@@ -94,6 +94,9 @@ public class EducateUpFrontFragment extends RationaleFragment {
 
   @Override
   public void onPermissionsResult(String[] grantedPermissions, String[] refusedPermissions) throws SecurityException {
+    if (getActivity() == null || getActivity().isFinishing()) {
+      return;
+    }
     if (refusedPermissions.length > 0) {
       getActivity().finish();
     } else {

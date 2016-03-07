@@ -31,13 +31,21 @@ public class AskInContextFragment extends RationaleDialogFragment implements Dia
   @NonNull
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
-    return new AlertDialog.Builder(getActivity(), R.style.AskInContextDialogTheme)
-        .setTitle("Ask in context...")
-        .setMessage("This is an example of rationale when asked in context.\n"
-            + "Press BACK to repeat the request.")
-        .setPositiveButton(android.R.string.ok, this)
-        .setNegativeButton(R.string.back, this)
-        .create();
+    if (isAnyAllowablePermission()) {
+      return new AlertDialog.Builder(getActivity(), R.style.AskInContextDialogTheme)
+          .setTitle("Ask in context...")
+          .setMessage("This is an example of rationale when asked in context.\n"
+              + "Press BACK to repeat the request.")
+          .setPositiveButton(android.R.string.ok, this)
+          .setNegativeButton(R.string.back, this)
+          .create();
+    } else {
+      return new AlertDialog.Builder(getActivity(), R.style.AskInContextDialogTheme)
+          .setTitle("Ask in context...")
+          .setMessage("The permission was checked to 'never ask again'.")
+          .setPositiveButton(android.R.string.ok, this)
+          .create();
+    }
   }
 
   @Override
@@ -47,14 +55,9 @@ public class AskInContextFragment extends RationaleDialogFragment implements Dia
         getPermissiveMessenger().cancelRequest();
         break;
       case DialogInterface.BUTTON_NEGATIVE:
-        getPermissiveMessenger().repeatRequest();
+        getPermissiveMessenger().repeatRequest(true);
         break;
     }
   }
 
-  @Override
-  public void onDismiss(DialogInterface dialog) {
-    super.onDismiss(dialog);
-    getPermissiveMessenger().cancelRequest();
-  }
 }

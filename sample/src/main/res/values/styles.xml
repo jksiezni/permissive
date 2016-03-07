@@ -16,5 +16,8 @@
     <style name="EducateInContextDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
         <item name="android:background">#8bc34a</item>
         <item name="colorAccent">@color/colorPrimary</item>
+
+        <item name="android:windowBackground">@null</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 </resources>
