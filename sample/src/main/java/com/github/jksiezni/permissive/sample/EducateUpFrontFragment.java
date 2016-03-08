@@ -80,8 +80,10 @@ public class EducateUpFrontFragment extends RationaleFragment {
   @Override
   public void onResume() {
     super.onResume();
-
-    if (Permissive.filterPermissions(getContext(), getPermissiveMessenger().getRequestedPermissions(), PackageManager.PERMISSION_GRANTED).length > 0) {
+    if (Permissive.filterPermissions(getContext(),
+            getPermissiveMessenger().getRequestedPermissions(),
+            PackageManager.PERMISSION_GRANTED).length > 0) {
+      // if user granted permission via Settings, then finish this fragment
       finishFragment();
     }
   }

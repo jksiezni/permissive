@@ -107,6 +107,14 @@ public class PermissiveMessenger implements Parcelable {
     return repeatRequest(false);
   }
 
+  /**
+   * Sends a message to repeat current request.
+   *
+   * <p>It's also possible to re-enable rationale display when user refuses request again.</p>
+   *
+   * @param showRationale Determines if a rationale should be shown again after unsuccessful request.
+   * @return {@code true} if the message was sent. Otherwise is {@code false}.
+   */
   public synchronized boolean repeatRequest(boolean showRationale) {
     if (messageSent) {
       return false;
@@ -126,6 +134,14 @@ public class PermissiveMessenger implements Parcelable {
     }
   }
 
+  /**
+   * Cancels current request.
+   *
+   * <p><b>Note:</b><i>Remember to always cancel request, if you do not want it to be repeated.
+   * It's mandatory for further processing of permissive actions.</i></p>
+   *
+   * @return {@code true} if the message was sent. Otherwise is {@code false}.
+   */
   public synchronized boolean cancelRequest() {
     if (messageSent) {
       return false;
@@ -144,6 +160,14 @@ public class PermissiveMessenger implements Parcelable {
     }
   }
 
+  /**
+   * Updates current request with a new {@link PermissionsResultListener}.
+   *
+   * <p>Use it when restoring state of the activity, fragment, etc.</p>
+   *
+   * @param listener  A new listener which should be added to the request.
+   * @return {@code true} if the message with update was sent. Otherwise is {@code false}.
+   */
   public boolean updatePermissionsResultListener(PermissionsResultListener listener) {
     try {
       Message msg = Message.obtain();
@@ -159,6 +183,15 @@ public class PermissiveMessenger implements Parcelable {
     }
   }
 
+  /**
+   * Allows to restore activity context to the request, so it can be still valid.
+   * Usually, it's required when changing screen orientation, etc.
+   *
+   * <p>Use it when restoring state of the activity, fragment, etc.</p>
+   *
+   * @param activity  A new activity which should be set for the request.
+   * @return {@code true} if the message with update was sent. Otherwise is {@code false}.
+   */
   public boolean restoreActivity(Activity activity) {
     try {
       Message msg = Message.obtain();
@@ -174,6 +207,17 @@ public class PermissiveMessenger implements Parcelable {
     }
   }
 
+  /**
+   * Recreates the request object with identical set of permissions to be requested.
+   * No listeners or other settings are restored.
+   *
+   * <p>It may be required to execute the request again, when the process is killed.
+   * Then, all requests and actions are lost, but activities and fragments are restored.
+   * Also, it may happen, that a rationale or even the Android permission request is restored,
+   * so we should rebuild old {@link Permissive.Request} to handle pending request.</p>
+   *
+   * @return Rebuilt request object.
+   */
   public Permissive.Request rebuildRequest() {
     return new Permissive.Request(true, permissions);
   }

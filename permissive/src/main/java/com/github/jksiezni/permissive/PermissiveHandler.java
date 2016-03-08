@@ -27,8 +27,8 @@ import android.os.Message;
 import android.os.Messenger;
 import android.util.Log;
 
+import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * One of core classes, that implements a state machine for permissions handling.
@@ -47,7 +47,7 @@ class PermissiveHandler {
 
   private final Handler handler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
     private Permissive.Action currentAction = null;
-    private final Queue<Permissive.Action> pendingActions = new ConcurrentLinkedQueue<>();
+    private final Queue<Permissive.Action> pendingActions = new LinkedList<>();
 
     @Override
     public boolean handleMessage(Message msg) {
@@ -84,6 +84,11 @@ class PermissiveHandler {
           break;
         case CANCEL_REQUEST:
           Log.v(TAG, "CANCEL_REQUEST");
+          if (currentAction == null) {
+            Log.e(TAG, "Unable to cancel a non-existent action.");
+            // TODO: add identifiers to running actions, so incoming messages can be matched with actions
+            break;
+          }
           processAction(currentAction);
           currentAction = processPendingActions();
           break;
@@ -98,7 +103,7 @@ class PermissiveHandler {
           Log.v(TAG, "UPDATE_LISTENER");
           if (currentAction == null) {
             Log.e(TAG, "Unable to update listener for non-existent action: " + msg.obj);
-            // FIXME: find out when it happens
+            // TODO: add identifiers to running actions, so incoming messages can be matched with actions
             break;
           }
           if (msg.obj instanceof PermissionsResultListener) {
