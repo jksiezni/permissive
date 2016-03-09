@@ -42,4 +42,7 @@ class RequestPermissionsResult {
     refusedPermissions = refused.toArray(new String[refused.size()]);
   }
 
+  boolean hasAnyRefusedPermissions() {
+    return refusedPermissions.length > 0;
+  }
 }

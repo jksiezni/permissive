@@ -67,7 +67,7 @@ class PermissiveHandler {
             // FIXME: find out when it happens
             break;
           }
-          if (!processPermissionsResultFor(currentAction)) {
+          if (!processPermissionsResultFor(currentAction, (RequestPermissionsResult) msg.obj)) {
             currentAction = processPendingActions();
           }
           break;
@@ -175,10 +175,10 @@ class PermissiveHandler {
     }
   }
 
-  private boolean processPermissionsResultFor(Permissive.Action action) {
+  private boolean processPermissionsResultFor(Permissive.Action action, RequestPermissionsResult result) {
     if (action instanceof Permissive.Request) {
       Permissive.Request request = (Permissive.Request) action;
-      if (showRationaleForRequest(request)) {
+      if (result.hasAnyRefusedPermissions() && showRationaleForRequest(request)) {
         return true;
       }
     } else {

@@ -59,8 +59,8 @@ public class PermissiveFragment extends Fragment {
   }
 
   private boolean waitingForResult;
-  private boolean hasResult;
 
+  private RequestPermissionsResult result;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -103,7 +103,7 @@ public class PermissiveFragment extends Fragment {
     if (DEBUG) {
       Log.v(TAG, "onResume():");
     }
-    if (hasResult) {
+    if (hasResult()) {
       closeFragment();
     }
   }
@@ -114,8 +114,8 @@ public class PermissiveFragment extends Fragment {
     if (DEBUG) {
       Log.v(TAG, "onDestroy(): isRemoving=" + isRemoving());
     }
-    if (hasResult) {
-      sendMsg(PermissiveHandler.PERMISSIONS_RESULT);
+    if (hasResult()) {
+      sendMsg(PermissiveHandler.PERMISSIONS_RESULT, result);
     } else if (!isRemoving()) {
       sendMsg(PermissiveHandler.CANCEL_REQUEST);
     }
@@ -127,10 +127,13 @@ public class PermissiveFragment extends Fragment {
       Log.v("PermissiveFragment", "Results: " + Arrays.toString(permissions) + " = " + Arrays.toString(grantResults));
     }
     waitingForResult = false;
-    hasResult = true; // postpone sending this event until this fragment is resumed
+
+    // save result, postpone sending this event until this fragment is resumed
+    result = new RequestPermissionsResult(permissions, grantResults);
+
     if (isResumed()) {
       Log.e(TAG, "It's in resumed state, so we should close it immediately.");
-      //closeFragment();
+      closeFragment();
     }
   }
 
@@ -149,28 +152,26 @@ public class PermissiveFragment extends Fragment {
         .commit();
   }
 
-  private boolean sendMsg(int what) {
-    try {
-      Message msg = Message.obtain();
-      msg.what = what;
-      messenger.send(msg);
-      return true;
-    } catch (RemoteException e) {
-      if (DEBUG) {
-        Log.w(TAG, e);
-      }
-      return false;
-    }
+  private boolean hasResult() {
+    return result != null;
   }
 
   private boolean restoreActivity() {
+    return sendMsg(PermissiveHandler.RESTORE_ACTIVITY, getActivity());
+  }
+
+  private boolean sendMsg(int what) {
+    return sendMsg(what, null);
+  }
+
+  private boolean sendMsg(int what, Object obj) {
     try {
       Message msg = Message.obtain();
-      msg.what = PermissiveHandler.RESTORE_ACTIVITY;
-      msg.obj = getActivity();
+      msg.what = what;
+      msg.obj = obj;
       messenger.send(msg);
       return true;
-    } catch (Exception e) {
+    } catch (RemoteException e) {
       if (DEBUG) {
         Log.w(TAG, e);
       }
