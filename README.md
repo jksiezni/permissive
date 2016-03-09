@@ -37,21 +37,21 @@ All screenshots were taken from __sample__ app, which provides exemplary impleme
  - Add the core dependency:
 ```gradle
 	dependencies {
-		compile 'com.github.jksiezni.permissive:permissive:+'
+		compile 'com.github.jksiezni.permissive:permissive:0.1'
 	}
 ```
  - (Optional) Add an extra library with helper fragments:
 ```gradle
 	dependencies {
 		// includes helper fragments based on Android Support v4 implementation (minSdkVersion 8)
-		compile 'com.github.jksiezni.permissive:permissive-fragments:+'
+		compile 'com.github.jksiezni.permissive:permissive-fragments:0.1'
 	}
 ```
 or
 ```gradle
 	dependencies {
 		// includes helper fragments based on native implementation (minSdkVersion 11)
-		compile 'com.github.jksiezni.permissive:permissive-fragments-v13:+'
+		compile 'com.github.jksiezni.permissive:permissive-fragments-v13:0.1'
 	}
 ```
 
