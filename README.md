@@ -66,70 +66,110 @@ new Permissive.Request(Manifest.permission.ACCESS_FINE_LOCATION).execute(getActi
 
 You can add callback listeners which return results of the request. Also, you can ask for more permissions with a single _Request_:
 ```java
-    new Permissive.Request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
-        .whenPermissionsGranted(new PermissionsGrantedListener() {
-          @Override
-          public void onPermissionsGranted(String[] permissions) throws SecurityException {
-            // given permissions are granted
-          }
-        })
-        .whenPermissionsRefused(new PermissionsRefusedListener() {
-          @Override
-          public void onPermissionsRefused(String[] permissions) {
-            // given permissions are refused
-          }
-        })
-        .execute(getActivity());
+new Permissive.Request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+    .whenPermissionsGranted(new PermissionsGrantedListener() {
+      @Override
+      public void onPermissionsGranted(String[] permissions) throws SecurityException {
+        // given permissions are granted
+      }
+    })
+    .whenPermissionsRefused(new PermissionsRefusedListener() {
+      @Override
+      public void onPermissionsRefused(String[] permissions) {
+        // given permissions are refused
+      }
+    })
+    .execute(getActivity());
 ```
 
 #### Providing rationale
 When requesting permissions, a rationale may be required. According to Material Design guidelines,
 you should provide a proper rationale depending on clarity and importance of permission type you are requesting.
-_Permissive_ API is very flexible and allows you to implement all strategies of requesting permissions:
- - Educate up-front
- - Ask up-front
- - Educate in context
- - Ask in context
+_Permissive_ API is very flexible and allows you to implement all strategies you may need when requesting permissions.
+See [Request patterns](https://www.google.com/design/spec/patterns/permissions.html#permissions-request-patterns) suggested by Google.
 
-// TODO finish description
-- Register a global ```Rationale```, which is executed every time, the permission request is denied:
-
-  **Note**: *Use ```PermissiveMessenger``` repeatPermissionsRequest() or cancelPermissionsRequest() methods to ask again for permissions or cancel ongoing request.
-  **Note 2**: If you forget to call one of ```PermissiveMessenger``` methods, then no more ```Requests``` or ```Actions``` will be processed.*
+##### Executing requests with ```Rationale```
+To show a rationale simply add a new ```Rationale``` callback to the ```Permissive.Request```:
 ```java
-    Permissive.registerGlobalRationale(Manifest.permission.ACCESS_FINE_LOCATION, new Rationale() {
-      @Override
-      public void onShowRationaleForRequest(Activity activity, String[] permissions, PermissiveMessenger messenger) {
-        new AlertDialog.Builder(activity)
-          .setTitle("LOCATION Rationale")
-          .setMessage("Location is required to track your position via GPS.")
-          .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-              messenger.repeatPermissionsRequest();
-            }
-          })
-          .setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog1) {
-              messenger.cancelPermissionsRequest();
-            }
-          })
-          .show();
-      }
-    });
+new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+          .withRationale(/*YourRationale*/)
+          .execute(getActivity());
 ```
 
-- Add ```Rationale``` to the ```Permissive.Request```:
+You can also register a _global_ ```Rationale```, which will be used automatically when requesting permission:
 ```java
-    new Permissive.Request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+// registar global rationale
+Permissive.registerGlobalRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE, /*YourRationale*/);
+...
+// perform a request
+new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE).execute(getActivity());
+```
+  **Note**: *A locally added rationale callback always takes precedence over global rationales.*
+
+##### Building ```Rationale```
+```Rationale``` implementation depends on the request pattern you choose to follow. Of course, it may vary from app to app,
+so _Permissive_ library does not enforce you to use any of them. Instead, it provides some helpers, that make it easier to build
+a well tailored ```Rationale```.
+
+- This is an example of ```Rationale``` implementation using _AlertDialog_:
+```java
+    new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
       .withRationale(new Rationale() {
         @Override
-        public void onShowRationaleForRequest(Activity activity, String[] permissions, PermissiveMessenger messenger) {
-          // show rationale in a dialog, fragment, activity, etc.
+        public void onShowRationale(Activity activity, String[] allowablePermissions, PermissiveMessenger messenger) {
+          new AlertDialog.Builder(activity)
+              .setTitle("Rationale title...")
+              .setMessage("A rationale message.")
+              .setPositiveButton(android.R.string.ok, null)
+              .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                  @Override
+                  public void onDismiss(DialogInterface dialog1) {
+                    messenger.cancelPermissionsRequest();
+                  }
+              })
+              .show();
         }
-      })
-      .execute(getActivity());
+      }).execute(getActivity());
+```
+The ```onShowRationale(Activity activity, String[] allowablePermissions, PermissiveMessenger messenger)``` 
+method is called when a rationale should be shown.
+The '''allowablePermissions''' argument gives you a hint, what permissions you can still ask for.
+It's a different approach to **'never ask again'** problem, where you would expect to have a list of blocked permissions.
+
+The ```PermissiveMessenger``` object allows you to control current ```Request```. Use _repeatPermissionsRequest()_ or _cancelPermissionsRequest()_ methods to ask again for permissions or cancel ongoing request.
+**Note**: *Remember to call one of _repeatPermissionsRequest()_ or _cancelPermissionsRequest()_ methods, in order to continue processing requests. Otherwise your ```Requests``` and ```Actions``` will be dead-locked.*
+  
+Also, __Permissive__ comes with additional **permissive-fragments** libraries which provide specialized fragments, that simplify building rationales.
+The main advantage of using those fragments, is when you want to preserve your request and rationale across configuration changes, like orientation changes, etc.
+Here's an example of a previous AlertDialog which is encapsulated in ```RationaleDialogFragment```:
+```java
+public class ExampleRationaleFragment extends RationaleDialogFragment implements DialogInterface.OnClickListener {
+  @NonNull
+  @Override
+  public Dialog onCreateDialog(Bundle savedInstanceState) {
+    return new AlertDialog.Builder(getActivity())
+        .setTitle("Rationale title...")
+        .setMessage("A rationale message.")
+        .setPositiveButton(android.R.string.ok, this)
+        .setNegativeButton(android.R.string.no, this)
+        .create();
+  }
+  @Override
+  public void onClick(DialogInterface dialog, int which) {
+    switch (which) {
+      case DialogInterface.BUTTON_POSITIVE:
+        getPermissiveMessenger().repeatRequest();
+        break;
+      case DialogInterface.BUTTON_NEGATIVE:
+        getPermissiveMessenger().cancelRequest();
+        break;
+    }
+  }
+}
+...
+new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    .withRationale(new ExampleRationaleFragment())
+    .execute(getActivity());
 ```
 
 #### Running a ```Permissive.Action```
@@ -140,11 +180,11 @@ Actions can be used in background tasks (like _Services_), where no Activity exi
 
 **Note**: *It's reasonable to not present the request dialog out of blue when running in background, but instead handle denied permission.*
 ```java
-    // here using Java 8 lambdas
-    new Permissive.Action<>(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        .whenPermissionsGranted(this::onPermissionsGranted)
-        .whenPermissionsRefused(this::onPermissionsRefused)
-        .execute(this);
+// here using Java 8 lambdas
+new Permissive.Action<>(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    .whenPermissionsGranted(this::onPermissionsGranted)
+    .whenPermissionsRefused(this::onPermissionsRefused)
+    .execute(getActivity());
 ```
 
 ## Advanced usage
@@ -153,10 +193,10 @@ Actions can be used in background tasks (like _Services_), where no Activity exi
 
 For some use-cases the ```Rationale``` should be displayed before asking for a permission. It can be done simply by adding _showRationaleFirst()_ call to the ```Permissive.Request```:
 ```java
-    new Permissive.Request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
-        .showRationaleFirst(true)
-        .withRationale(new Rationale() {/*...*/})
-        .execute(getActivity());
+new Permissive.Request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+    .showRationaleFirst(true)
+    .withRationale(new Rationale() {/*...*/})
+    .execute(getActivity());
 ```
 
 #### Checking permission in-place
