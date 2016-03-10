@@ -94,6 +94,12 @@ public class RationaleFragment extends Fragment implements Rationale, Permission
   }
 
   @Override
+  public void onActivityCreated(Bundle savedInstanceState) {
+    super.onActivityCreated(savedInstanceState);
+    permissiveMessenger.restoreActivity(getActivity());
+  }
+
+  @Override
   public void onSaveInstanceState(Bundle outState) {
     Log.i(getClass().getSimpleName(), "onSaveInstanceState(): this=" + this);
     super.onSaveInstanceState(outState);

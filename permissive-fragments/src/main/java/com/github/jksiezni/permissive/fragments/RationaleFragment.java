@@ -17,6 +17,7 @@ package com.github.jksiezni.permissive.fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -98,6 +99,12 @@ public class RationaleFragment extends Fragment implements Rationale, Permission
           .whenPermissionsResultReceived(this)
           .execute(getActivity());
     }
+  }
+
+  @Override
+  public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+    super.onActivityCreated(savedInstanceState);
+    permissiveMessenger.restoreActivity(getActivity());
   }
 
   @Override
