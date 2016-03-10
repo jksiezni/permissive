@@ -48,10 +48,10 @@ public class EducateUpFrontFragment extends RationaleFragment {
     final SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
     final boolean firstTimeAsk = sharedPrefs.getBoolean("first_time_ask", true);
 
-    Button tryItBtn = (Button) view.findViewById(R.id.tryItBtn);
+    Button continueBtn = (Button) view.findViewById(R.id.continueBtn);
     if (!firstTimeAsk && !isAnyAllowablePermission()) {
-      tryItBtn.setText("SETTINGS");
-      tryItBtn.setOnClickListener(new View.OnClickListener() {
+      continueBtn.setText("SETTINGS");
+      continueBtn.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
           Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", v.getContext().getPackageName(), null));
@@ -59,7 +59,7 @@ public class EducateUpFrontFragment extends RationaleFragment {
         }
       });
     } else {
-      view.findViewById(R.id.tryItBtn).setOnClickListener(new View.OnClickListener() {
+      view.findViewById(R.id.continueBtn).setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
           getPermissiveMessenger().repeatRequest();
@@ -91,7 +91,9 @@ public class EducateUpFrontFragment extends RationaleFragment {
   @Override
   public void onDestroy() {
     super.onDestroy();
-    getPermissiveMessenger().cancelRequest();
+    if (isRemoving()) {
+      getPermissiveMessenger().cancelRequest();
+    }
   }
 
   @Override
