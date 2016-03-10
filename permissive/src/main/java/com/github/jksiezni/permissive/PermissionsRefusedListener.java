@@ -17,9 +17,14 @@
 package com.github.jksiezni.permissive;
 
 /**
- *
+ * The interface for receiving events with refused permissions.
  */
 public interface PermissionsRefusedListener {
 
+  /**
+   * The method is called at the end of action, only if one or more permissions were refused.
+   *
+   * @param permissions    An array of refused permissions.
+   */
   void onPermissionsRefused(String[] permissions);
 }

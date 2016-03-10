@@ -17,8 +17,16 @@
 package com.github.jksiezni.permissive;
 
 /**
- *
+ * The interface for receiving events with both granted and refused permissions.
  */
 public interface PermissionsResultListener {
+
+  /**
+   * The method is <b>always</b> called at the end of action and provides all permissions results.
+   *
+   * @param grantedPermissions An array of granted permissions.
+   * @param refusedPermissions An array of refused permissions.
+   * @throws SecurityException It's declared here in order to silence Android lint.
+   */
   void onPermissionsResult(String[] grantedPermissions, String[] refusedPermissions) throws SecurityException;
 }

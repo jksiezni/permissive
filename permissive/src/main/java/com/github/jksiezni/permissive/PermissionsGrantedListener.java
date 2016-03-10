@@ -17,9 +17,15 @@
 package com.github.jksiezni.permissive;
 
 /**
- *
+ * The interface for receiving events with granted permissions.
  */
 public interface PermissionsGrantedListener {
 
+  /**
+   * The method is called at the end of action, only if one or more permissions were granted.
+   *
+   * @param permissions    An array of granted permissions.
+   * @throws SecurityException It's declared here in order to silence Android lint.
+   */
   void onPermissionsGranted(String[] permissions) throws SecurityException;
 }

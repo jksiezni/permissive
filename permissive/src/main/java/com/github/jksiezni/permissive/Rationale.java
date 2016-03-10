@@ -19,9 +19,26 @@ package com.github.jksiezni.permissive;
 import android.app.Activity;
 
 /**
- *
+ * The interface for displaying a rationale to the user.
  */
 public interface Rationale {
 
+  /**
+   * The method provides an entry point to displaying a rationale to the user.
+   *
+   * Each rationale is bound to the request via {@link PermissiveMessenger},
+   * which allows to control request's flow while a rationale is displayed.
+   *
+   * Thus, the developer is responsible for preserving {@code messenger},
+   * until the request is <i>canceled</i> or <i>repeated</i>.
+   *
+   * <p><b>Note:</b> <i>Make sure, that you always invoke one of {@link PermissiveMessenger#cancelRequest()}
+   * or {@link PermissiveMessenger#repeatRequest()} methods when you are finished with the rationale.
+   * Otherwise, Permissive library won't be able to work!</i></p>
+   *
+   * @param activity Current activity context.
+   * @param allowablePermissions An array of permissions, that still can be changed by the user. It corresponds to 'never ask again' feature.
+   * @param messenger Provides methods for sending important messages related to current request.
+   */
   void onShowRationale(Activity activity, String[] allowablePermissions, PermissiveMessenger messenger);
 }
