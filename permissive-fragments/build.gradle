@@ -12,7 +12,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    buildToolsVersion "24.0.1"
     defaultPublishConfig "release"
 
     defaultConfig {
@@ -34,7 +34,7 @@ dependencies {
 
     compile project(":permissive")
 
-    compile 'com.android.support:support-v4:23.1.1'
+    compile 'com.android.support:support-v4:23.0.0'
 }
 
 // build a jar with source files
