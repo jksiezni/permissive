@@ -49,7 +49,7 @@ public class PermissiveFragment extends Fragment {
   private String[] permissions;
   private Messenger messenger;
 
-  public static PermissiveFragment create(String[] permissions, Handler handler) {
+  static PermissiveFragment create(String[] permissions, Handler handler) {
     final PermissiveFragment f = new PermissiveFragment();
     final Bundle bundle = new Bundle();
     bundle.putStringArray(PERMISSIONS, permissions);

@@ -35,6 +35,7 @@ import java.util.Queue;
  */
 class PermissiveHandler {
   private static final String TAG = PermissiveHandler.class.getSimpleName();
+  private static final boolean DEBUG = BuildConfig.DEBUG;
 
   private static final int REQUEST_PERMISSIONS = 1;
 
@@ -44,6 +45,24 @@ class PermissiveHandler {
   static final int CANCEL_REQUEST = 5;
   static final int UPDATE_LISTENER = 6;
 
+  static String getMessageString(int what) {
+    switch (what) {
+      case REQUEST_PERMISSIONS:
+        return "REQUEST_PERMISSIONS";
+      case PERMISSIONS_RESULT:
+        return "PERMISSIONS_RESULT";
+      case RESTORE_ACTIVITY:
+        return "RESTORE_ACTIVITY";
+      case REPEAT_REQUEST:
+        return "REPEAT_REQUEST";
+      case CANCEL_REQUEST:
+        return "CANCEL_REQUEST";
+      case UPDATE_LISTENER:
+        return "UPDATE_LISTENER";
+      default:
+        return "Unknown msg: " + what;
+    }
+  }
 
   private final Handler handler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
     private Permissive.Action currentAction = null;
@@ -51,17 +70,20 @@ class PermissiveHandler {
 
     @Override
     public boolean handleMessage(Message msg) {
+      if(DEBUG) {
+        Log.v(TAG, "handleMessage: " + getMessageString(msg.what));
+      }
       switch (msg.what) {
         case REQUEST_PERMISSIONS:
-          Log.v(TAG, "REQUEST_PERMISSIONS");
           pendingActions.add((Permissive.Action) msg.obj);
-          dumpPendingActions();
+          if(DEBUG) {
+            dumpPendingActions();
+          }
           if (currentAction == null) {
             currentAction = processPendingActions();
           }
           break;
         case PERMISSIONS_RESULT:
-          Log.v(TAG, "PERMISSIONS_RESULT");
           if (currentAction == null) {
             Log.e(TAG, "Unable to process result for non-existent action.");
             // FIXME: find out when it happens
@@ -72,7 +94,6 @@ class PermissiveHandler {
           }
           break;
         case REPEAT_REQUEST:
-          Log.v(TAG, "REPEAT_REQUEST");
           if (currentAction instanceof Permissive.Request) {
             final Permissive.Request request = (Permissive.Request) currentAction;
             request.shouldDisplayRationale(msg.arg1 > 0);
@@ -83,7 +104,6 @@ class PermissiveHandler {
           }
           break;
         case CANCEL_REQUEST:
-          Log.v(TAG, "CANCEL_REQUEST");
           if (currentAction == null) {
             Log.e(TAG, "Unable to cancel a non-existent action.");
             // TODO: add identifiers to running actions, so incoming messages can be matched with actions
@@ -93,14 +113,12 @@ class PermissiveHandler {
           currentAction = processPendingActions();
           break;
         case RESTORE_ACTIVITY:
-          Log.v(TAG, "RESTORE_ACTIVITY");
           if (currentAction instanceof Permissive.Request) {
             Permissive.Request request = (Permissive.Request) currentAction;
             request.updateActivityRef((Activity) msg.obj);
           }
           break;
         case UPDATE_LISTENER:
-          Log.v(TAG, "UPDATE_LISTENER");
           if (currentAction == null) {
             Log.e(TAG, "Unable to update listener for non-existent action: " + msg.obj);
             // TODO: add identifiers to running actions, so incoming messages can be matched with actions
@@ -129,7 +147,9 @@ class PermissiveHandler {
     private Permissive.Action processPendingActions() {
       Permissive.Action action;
       while ((action = pendingActions.poll()) != null) {
-        Log.v(TAG, "processing: " + action);
+        if(DEBUG) {
+          Log.v(TAG, "processing: " + action);
+        }
         if (action instanceof Permissive.Request
             && requestPermissions((Permissive.Request) action)) {
           return action;
@@ -154,7 +174,9 @@ class PermissiveHandler {
     if (!isValidActivity(activity)) {
       return false;
     }
-    Log.v(TAG, "requestPermissions(): " + request);
+    if(DEBUG) {
+      Log.v(TAG, "requestPermissions(): " + request);
+    }
 
     final String[] permissionsToAsk = request.getRefusedPermissions(activity);
     if (permissionsToAsk.length > 0) {
