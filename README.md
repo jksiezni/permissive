@@ -1,4 +1,5 @@
 [![Release](https://jitpack.io/v/jksiezni/permissive.svg)](https://jitpack.io/#jksiezni/permissive)
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Permissive-green.svg?style=flat)](http://android-arsenal.com/details/1/4316)
 
 # Permissive
 
