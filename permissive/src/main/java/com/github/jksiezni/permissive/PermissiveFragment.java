@@ -29,7 +29,7 @@ import android.util.Log;
 import java.util.Arrays;
 
 /**
- * This fragment is used to request permissions on Android Marshmallow (>23).
+ * This a data fragment (not visible to user) used to request permissions on Android Marshmallow (API-23) or newer.
  *
  * It's designed to retain its state across activities and processes,
  * so we can be sure, that the request result is received and correctly dispatched.
@@ -142,7 +142,7 @@ public class PermissiveFragment extends Fragment {
     super.onSaveInstanceState(outState);
     outState.putBoolean(WAITING_FOR_RESULT, waitingForResult);
     if (DEBUG) {
-      Log.v("PermissiveFragment", "onSaveInstanceState(): " + waitingForResult);
+      Log.v("PermissiveFragment", "onSaveInstanceState(): waitingForResult=" + waitingForResult);
     }
   }
 

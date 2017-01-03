@@ -45,7 +45,7 @@ class PermissiveHandler {
   static final int CANCEL_REQUEST = 5;
   static final int UPDATE_LISTENER = 6;
 
-  static String getMessageString(int what) {
+  private static String getMessageString(int what) {
     switch (what) {
       case REQUEST_PERMISSIONS:
         return "REQUEST_PERMISSIONS";
@@ -64,14 +64,17 @@ class PermissiveHandler {
     }
   }
 
-  private final Handler handler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
-    private Permissive.Action currentAction = null;
+  private class MessageHandler implements Handler.Callback {
+
     private final Queue<Permissive.Action> pendingActions = new LinkedList<>();
+    private Permissive.Action currentAction = null;
 
     @Override
     public boolean handleMessage(Message msg) {
       if(DEBUG) {
-        Log.v(TAG, "handleMessage: " + getMessageString(msg.what));
+        Log.v(TAG, String.format("handleMessage: %s with obj=%s",
+            getMessageString(msg.what),
+            msg.obj));
       }
       switch (msg.what) {
         case REQUEST_PERMISSIONS:
@@ -98,7 +101,7 @@ class PermissiveHandler {
             final Permissive.Request request = (Permissive.Request) currentAction;
             request.shouldDisplayRationale(msg.arg1 > 0);
             if (!requestPermissions(request)) {
-              processAction(currentAction);
+              finalizeAction(currentAction);
               currentAction = processPendingActions();
             }
           }
@@ -109,7 +112,7 @@ class PermissiveHandler {
             // TODO: add identifiers to running actions, so incoming messages can be matched with actions
             break;
           }
-          processAction(currentAction);
+          finalizeAction(currentAction);
           currentAction = processPendingActions();
           break;
         case RESTORE_ACTIVITY:
@@ -133,7 +136,8 @@ class PermissiveHandler {
     }
 
     private void dumpPendingActions() {
-      StringBuilder builder = new StringBuilder("current) " + currentAction + "\n");
+      String current = currentAction == null ? "none" : currentAction.toString();
+      StringBuilder builder = new StringBuilder("current) " + current + "\n");
       int count = 0;
       for (Permissive.Action action : pendingActions) {
         builder.append(++count);
@@ -154,12 +158,19 @@ class PermissiveHandler {
             && requestPermissions((Permissive.Request) action)) {
           return action;
         } else {
-          processAction(action);
+          finalizeAction(action);
         }
       }
       return null;
     }
-  });
+  }
+
+  private final MessageHandler callbackHandler = new MessageHandler();
+  private final Handler handler = new Handler(Looper.getMainLooper(), callbackHandler);
+
+  boolean hasPendingActions() {
+    return callbackHandler.currentAction != null || !callbackHandler.pendingActions.isEmpty();
+  }
 
   void enqueueAction(Permissive.Action action) {
     handler.obtainMessage(REQUEST_PERMISSIONS, action).sendToTarget();
@@ -189,7 +200,7 @@ class PermissiveHandler {
     return false;
   }
 
-  private void processAction(Permissive.Action action) {
+  private void finalizeAction(Permissive.Action action) {
     Context context = action.getContext();
     if (context != null) {
       final int[] grants = getPermissionGrants(context, action.getPermissions());
@@ -206,7 +217,7 @@ class PermissiveHandler {
     } else {
       Log.e(TAG, "No request could receive result: " + action);
     }
-    processAction(action);
+    finalizeAction(action);
     return false;
   }
 
@@ -240,7 +251,7 @@ class PermissiveHandler {
 
     final int permissionCount = permissions.length;
     for (int i = 0; i < permissionCount; i++) {
-      grantResults[i] = Permissive.getPermissionGrant(context, permissions[i]);
+      grantResults[i] = Permissive.checkPermissionInt(context, permissions[i]);
     }
     return grantResults;
   }
@@ -255,7 +266,7 @@ class PermissiveHandler {
     final FragmentManager fm = activity.getFragmentManager();
     PermissiveFragment frag = (PermissiveFragment) fm.findFragmentByTag(Permissive.PERMISSIVE_FRAGMENT_TAG);
     if (frag != null) {
-      Log.e(TAG, "A previous request fragment still exists!");
+      Log.w(TAG, "A previous request fragment still exists!");
       frag.setMessenger(new Messenger(handler));
       return;
     }

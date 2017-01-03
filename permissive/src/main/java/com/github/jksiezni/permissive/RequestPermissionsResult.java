@@ -29,6 +29,9 @@ class RequestPermissionsResult {
   final String[] refusedPermissions;
 
   RequestPermissionsResult(String[] permissions, int[] grantResults) {
+    if(permissions.length != grantResults.length) {
+      throw new IllegalArgumentException("Both arrays of permissions and grantResults must have equal lengths.");
+    }
     ArrayList<String> granted = new ArrayList<>();
     ArrayList<String> refused = new ArrayList<>();
     for (int i = 0; i < permissions.length; ++i) {
