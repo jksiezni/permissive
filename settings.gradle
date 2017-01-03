@@ -1,1 +1,1 @@
-include ':permissive', ':sample', ':permissive-fragments', ':permissive-fragments-v13'
+include ':permissive', ':sample', ':permissive-fragments', ':permissive-fragments-v13', ':permissive-testing'
