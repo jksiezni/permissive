@@ -1,18 +1,10 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
-    }
-}
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "24.0.1"
+    buildToolsVersion project.ext.buildToolsVersion
     defaultPublishConfig "release"
 
     defaultConfig {
