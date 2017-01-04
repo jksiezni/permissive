@@ -24,6 +24,7 @@ All screenshots were taken from __sample__ app, which provides exemplary impleme
 * No messing with your Activities (well, actually adds a fragment, but it should not bother you in most cases)
 * No additional dependencies
 * No code generation
+* Unique __Espresso__ compatible [Permissive Testing](https://github.com/jksiezni/permissive/wiki/Testing-Runtime-Permissions) library *(experimental)*
 
 ## Getting started
 
@@ -46,11 +47,9 @@ All screenshots were taken from __sample__ app, which provides exemplary impleme
 	dependencies {
 		// includes helper fragments based on Android Support v4 implementation (minSdkVersion 8)
 		compile 'com.github.jksiezni.permissive:permissive-fragments:0.1'
-	}
-```
-or
-```gradle
-	dependencies {
+
+		and/or
+
 		// includes helper fragments based on native implementation (minSdkVersion 11)
 		compile 'com.github.jksiezni.permissive:permissive-fragments-v13:0.1'
 	}
@@ -59,13 +58,13 @@ or
 ### Usage
 
 #### Requesting permissions
-```Permissive.Request``` allows to simply ask user for a permission and then (if allowed) do the task.
+```Permissive.Request``` allows to simply ask user for a permission and (if allowed) do the task.
 To request a permission you just need to create and execute ```Permissive.Request```:
 ```java
 new Permissive.Request(Manifest.permission.ACCESS_FINE_LOCATION).execute(getActivity());
 ```
 
-You can add callback listeners which return results of the request. Also, you can ask for more permissions with a single _Request_:
+Add callback listeners that return results of the request. Also, you can ask for more permissions with a single _Request_:
 ```java
 new Permissive.Request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
     .whenPermissionsGranted(new PermissionsGrantedListener() {
