@@ -2,4 +2,9 @@
     <string name="app_name">Permissive sample</string>
 
     <string name="back">back</string>
+
+    <!-- Educate Up-Front strings -->
+    <string name="educate_up_front_title">Educate up-front example…</string>
+    <string name="exit_label">EXIT</string>
+    <string name="continue_label"><![CDATA[CONTINUE >]]></string>
 </resources>

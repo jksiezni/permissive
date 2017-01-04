@@ -39,4 +39,6 @@ dependencies {
     compile project(':permissive-fragments')
     compile 'com.android.support:appcompat-v7:25.1.0'
 
+    androidTestCompile project(':permissive-testing')
+    androidTestCompile 'junit:junit:4.12'
 }

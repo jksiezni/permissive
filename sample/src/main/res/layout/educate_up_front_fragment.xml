@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="Educate up-front example..."
+        android:text="@string/educate_up_front_title"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@android:color/white" />
 
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="@android:color/white"
-            android:text="EXIT"/>
+            android:text="@string/exit_label"/>
 
         <Button
             style="?attr/buttonBarButtonStyle"
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="@android:color/white"
-            android:text="CONTINUE >"/>
+            android:text="@string/continue_label"/>
     </android.support.v7.widget.ButtonBarLayout>
 
 </RelativeLayout>

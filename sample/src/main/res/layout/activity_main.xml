@@ -12,21 +12,21 @@
               tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/askInContextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="askForCameraPermission"
         android:text="Ask In Context"/>
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/educateInContextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="educateForLocationPermission"
         android:text="Educate In Context"/>
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/openSettingsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="openSettings"

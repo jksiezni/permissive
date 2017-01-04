@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,7 +50,7 @@ public class EducateUpFrontFragment extends RationaleFragment {
     final boolean firstTimeAsk = sharedPrefs.getBoolean("first_time_ask", true);
 
     Button continueBtn = (Button) view.findViewById(R.id.continueBtn);
-    if (!firstTimeAsk && !isAnyAllowablePermission()) {
+    if (!isAnyAllowablePermission()) {
       continueBtn.setText("SETTINGS");
       continueBtn.setOnClickListener(new View.OnClickListener() {
         @Override
@@ -72,6 +73,7 @@ public class EducateUpFrontFragment extends RationaleFragment {
       @Override
       public void onClick(View v) {
         getActivity().finish();
+        getPermissiveMessenger().cancelRequest();
       }
     });
 
@@ -91,9 +93,8 @@ public class EducateUpFrontFragment extends RationaleFragment {
   @Override
   public void onDestroy() {
     super.onDestroy();
-    if (isRemoving()) {
-      getPermissiveMessenger().cancelRequest();
-    }
+    Log.i(getClass().getSimpleName(), "onDestroy()");
+    getPermissiveMessenger().cancelRequest();
   }
 
   @Override
