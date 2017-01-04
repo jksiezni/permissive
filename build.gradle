@@ -21,7 +21,7 @@ allprojects {
 
 subprojects {
     group = 'com.github.jksiezni.permissive'
-    version = '0.2-SNAPSHOT'
+    version = '0.2'
 
     ext.buildToolsVersion = "25.0.2"
 }
