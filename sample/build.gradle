@@ -1,17 +1,7 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'me.tatarka:gradle-retrolambda:3.4.0'
-    }
-}
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion project.ext.buildToolsVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -21,7 +11,6 @@ android {
     defaultConfig {
         applicationId "com.github.jksiezni.permissive.sample"
         minSdkVersion 9
-        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
@@ -35,10 +24,10 @@ android {
 }
 
 dependencies {
-    compile project(':permissive')
-    compile project(':permissive-fragments')
-    compile 'com.android.support:appcompat-v7:25.1.0'
+    implementation project(':permissive')
+    implementation project(':permissive-fragments')
+    implementation 'com.android.support:appcompat-v7:25.1.0'
 
-    androidTestCompile project(':permissive-testing')
-    androidTestCompile 'junit:junit:4.12'
+    androidTestImplementation project(':permissive-testing')
+    androidTestImplementation 'junit:junit:4.12'
 }

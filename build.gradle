@@ -4,10 +4,11 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.3'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
+        classpath 'com.android.tools.build:gradle:3.5.0'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -16,14 +17,13 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        google()
     }
 }
 
 subprojects {
     group = 'com.github.jksiezni.permissive'
-    version = '0.3-SNAPSHOT'
-
-    ext.buildToolsVersion = "25.0.2"
+    version = '0.3'
 }
 
 task clean(type: Delete) {

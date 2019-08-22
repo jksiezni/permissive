@@ -19,11 +19,9 @@ apply plugin: 'com.github.dcendents.android-maven'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion project.ext.buildToolsVersion
 
     defaultConfig {
         minSdkVersion 8
-        targetSdkVersion 25
         versionCode 1
         versionName version
     }
@@ -36,6 +34,6 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support.test.espresso:espresso-core:2.3-alpha'
-    compile 'com.android.support.test.espresso:espresso-intents:2.3-alpha'
+    api 'com.android.support.test.espresso:espresso-core:2.3-alpha'
+    api 'com.android.support.test.espresso:espresso-intents:2.3-alpha'
 }

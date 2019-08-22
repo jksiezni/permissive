@@ -4,12 +4,10 @@ apply plugin: 'com.github.dcendents.android-maven'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion project.ext.buildToolsVersion
     defaultPublishConfig "release"
 
     defaultConfig {
         minSdkVersion 8
-        targetSdkVersion 23
         versionCode 1
         versionName version
     }
@@ -22,11 +20,11 @@ android {
 }
 
 dependencies {
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 
-    compile project(":permissive")
+    api project(":permissive")
 
-    compile 'com.android.support:support-v4:23.0.0'
+    api 'com.android.support:support-v4:23.0.0'
 }
 
 // build a jar with source files
