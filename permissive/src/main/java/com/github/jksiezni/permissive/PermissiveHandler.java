@@ -272,7 +272,7 @@ class PermissiveHandler {
     }
     fm.beginTransaction()
         .add(PermissiveFragment.create(permissions, handler), Permissive.PERMISSIVE_FRAGMENT_TAG)
-        .commit();
+        .commitAllowingStateLoss();
   }
 
 }

@@ -149,7 +149,7 @@ public class PermissiveFragment extends Fragment {
   private void closeFragment() {
     getFragmentManager().beginTransaction()
         .remove(this)
-        .commit();
+        .commitAllowingStateLoss();
   }
 
   private boolean hasResult() {
